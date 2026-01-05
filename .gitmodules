@@ -1,0 +1,6 @@
+[submodule "osce-backend"]
+	path = osce-backend
+	url = https://github.com/Hsiang-Wei/OSCE_Virtual-Human
+[submodule "osce-frontend"]
+	path = osce-frontend
+	url = https://github.com/OSCE-members/osce
