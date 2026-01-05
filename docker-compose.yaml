@@ -1,0 +1,64 @@
+version: "3.9"
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - PYTHONPATH=/app/osce-backend
+      - DJANGO_DEBUG=False
+      - BASE_DIR=/app/osce-backend
+    volumes:
+      - ./osce-backend:/app/osce-backend
+      - ./db:/app/osce-backend/db
+      - ./log:/app/osce-backend/log
+    working_dir: /app/osce-backend
+    command: >
+      bash -c "
+        python3.13 manage.py collectstatic --noinput --settings=backend_api.settings 
+        python3.13 manage.py makemigrations &&  python3.13 manage.py migrate --noinput
+        exec gunicorn backend_api.wsgi:application --bind 0.0.0.0:8000 --workers 3
+        "
+    ports:
+      - "8001:8000"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    volumes:
+      - ./osce-frontend:/app/osce-frontend
+      - ./osce-frontend/dist:/app/osce-frontend/dist
+    command: >
+      bash -c "
+        npm install
+        npm run build:admin && 
+        npm run build:user
+        "
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "12001:80"
+      - "12000:443"
+    working_dir: /app/osce-frontend
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./osce-frontend/dist:/usr/share/nginx/html
+      - ./static:/app/CSMU/backend_api/static
+      - ./fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
+      - ./privkey.pem:/etc/ssl/private/privkey.pem:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app-network
