@@ -54,7 +54,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./osce-frontend/dist:/usr/share/nginx/html
-      - ./static:/app/CSMU/backend_api/static
+      - ./static:/app/osce-backend/static
       - ./fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
       - ./privkey.pem:/etc/ssl/private/privkey.pem:ro
     depends_on:
