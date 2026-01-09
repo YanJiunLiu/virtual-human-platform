@@ -35,7 +35,7 @@ services:
       dockerfile: Dockerfile.frontend
     volumes:
       - ./osce-frontend:/app/osce-frontend
-      - ./osce-frontend/dist:/app/osce-frontend/dist
+      - ./dist:/app/osce-frontend/dist
     networks:
       - app-network
 
@@ -47,7 +47,7 @@ services:
     working_dir: /app/osce-frontend
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./osce-frontend/dist:/usr/share/nginx/html
+      - ./dist:/usr/share/nginx/html
       - ./static:/app/osce-backend/static
       - ./fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
       - ./privkey.pem:/etc/ssl/private/privkey.pem:ro
