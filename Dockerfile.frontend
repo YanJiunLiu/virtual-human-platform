@@ -2,24 +2,11 @@ FROM ubuntu:24.04
 
 WORKDIR /app
 
-# 安裝基本工具與 Node.js 20
 RUN apt-get update && apt-get install -y \
     curl git build-essential wget software-properties-common \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# 1. 切換到前端目錄
+COPY ./osce-frontend /app/osce-frontend 
 WORKDIR /app/osce-frontend
-
-# 2. 只複製 package.json (不複製 package-lock.json，讓 Linux 現場產生)
-COPY ./osce-frontend/package.json ./
-
-# 3. 在 Linux 環境下執行安裝 (這會產生正確的 x64 依賴)
-RUN npm install --force
-
-# 4. 現在才複製其餘的前端原始碼
-COPY ./osce-frontend ./
-
-
-
