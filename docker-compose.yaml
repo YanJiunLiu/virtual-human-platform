@@ -37,8 +37,7 @@ services:
       - ./osce-frontend:/app/osce-frontend
       - ./dist:/app/osce-frontend/dist
     command: >
-      bash -c "
-            npm install --force && 
+      bash -c " 
             npm run build:admin && 
             npm run build:user && 
             tail -f /dev/null" # 保持容器運行
