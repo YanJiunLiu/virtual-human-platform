@@ -37,10 +37,11 @@ services:
       - ./osce-frontend:/app/osce-frontend
       - ./dist:/app/osce-frontend/dist
     command: >
-      bash -c "npm run build:admin && 
-             npm run build:user && 
-             echo 'Build finished!' && 
-             tail -f /dev/null" # 保持容器運行
+      bash -c "
+            npm install --force && 
+            npm run build:admin && 
+            npm run build:user && 
+            tail -f /dev/null" # 保持容器運行
     networks:
       - app-network
 
