@@ -21,6 +21,3 @@ RUN npm install
 # 4. 現在才複製其餘的前端原始碼
 COPY ./osce-frontend ./
 
-# 5. 執行編譯 (根據你之前的指令)
-RUN npm run build:admin
-RUN npm run build:user

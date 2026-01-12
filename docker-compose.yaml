@@ -36,6 +36,11 @@ services:
     volumes:
       - ./osce-frontend:/app/osce-frontend
       - ./dist:/app/osce-frontend/dist
+    command: >
+      bash -c "
+        npm run build:admin && 
+        npm run build:user
+        "
     networks:
       - app-network
 
