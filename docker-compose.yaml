@@ -39,8 +39,7 @@ services:
     command: >
       bash -c " 
             npm run build:admin && 
-            npm run build:user && 
-            tail -f /dev/null" # 保持容器運行
+            npm run build:user"
     networks:
       - app-network
 
@@ -49,7 +48,6 @@ services:
     ports:
       - "12001:80"
       - "12000:443"
-    working_dir: /app/osce-frontend
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./dist:/usr/share/nginx/html
