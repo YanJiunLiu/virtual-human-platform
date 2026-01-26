@@ -98,7 +98,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 WORKDIR /app
 
 # 複製應用
-COPY Linly_Talker_api/ /app/
+COPY osce-ai/Linly_Talker_api/ /app/
 
 # 創建目錄
 RUN mkdir -p /app/media /app/staticfiles
