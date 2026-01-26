@@ -1,5 +1,10 @@
 version: "3.9"
 
+volumes:
+  ollama-data:
+  redis_data:
+
+
 networks:
   app-network:
     driver: bridge
@@ -9,6 +14,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
+    container_name: osce-backend
     environment:
       - PYTHONPATH=/app/osce-backend
       - DJANGO_DEBUG=False
@@ -43,8 +49,80 @@ services:
     networks:
       - app-network
 
+  ai-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    container_name: osce-ai-backend
+    ports:
+      - "8007:8007"
+    depends_on:
+      - ollama
+    environment:
+      - DJANGO_GPU_ID=1
+      - OLLAMA_URL=http://ollama:11434
+      - DJANGO_SETTINGS_MODULE=Linly_Talker_api.settings
+      - PYTHONUNBUFFERED=1
+      - NUMBA_THREADING_LAYER=workqueue
+    volumes:
+      # 掛載 checkpoints（避免每次重新下載）
+      - ./Linly_Talker_api/Linly-Talker/checkpoints:/app/Linly-Talker/checkpoints
+      # 掛載 media（持久化生成的文件）
+      - ./Linly_Talker_api/media:/app/media
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ '1' ] # 使用 GPU 1
+              capabilities: [ gpu ]
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8007/api/health/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: osce-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:11434/api/tags" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  redis:
+    image: redis:latest
+    container_name: osce-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
   nginx:
     image: nginx:latest
+    container_name: osce-nginx
     ports:
       - "12001:80"
       - "12000:443"

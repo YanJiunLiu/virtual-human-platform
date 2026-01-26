@@ -1,0 +1,114 @@
+# ========== 構建階段 ==========
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_DEFAULT_TIMEOUT=1200 \
+    PIP_RETRIES=5
+
+# 安裝構建依賴
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    python3.10-dev \
+    build-essential \
+    cmake \
+    pkg-config \
+    git \
+    wget \
+    curl \
+    libsndfile1-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
+
+# 升級工具
+RUN pip install --upgrade pip setuptools wheel
+
+# ========== 不使用清華鏡像（台灣用戶）==========
+# 使用官方 PyPI，增加超時和重試
+RUN pip config set global.timeout 1200 && \
+    pip config set global.retries 5
+# ===========================================
+
+WORKDIR /build
+
+COPY osce-ai/requirements.txt .
+COPY osce-ai/clean_reqs.py .
+
+# ========== 過濾 requirements.txt ==========
+RUN python3 clean_reqs.py && \
+    pip install --no-cache-dir -r requirements-clean.txt && \
+    rm clean_reqs.py requirements-clean.txt
+# =========================================
+
+# ========== 分批安裝（避免超時）==========
+# 1. PyTorch（最大的包，單獨處理，使用官方源）
+RUN echo "========== 下載 PyTorch (約 900 MB) ==========" && \
+    pip install --no-cache-dir \
+    torch==2.0.1 \
+    --index-url https://download.pytorch.org/whl/cu118 \
+    --timeout 1800 && \
+    echo "✓ PyTorch 安裝完成"
+
+# 2. torchvision 和 torchaudio
+RUN echo "========== 下載 torchvision 和 torchaudio ==========" && \
+    pip install --no-cache-dir \
+    torchvision==0.15.2 \
+    torchaudio==2.0.2 \
+    --index-url https://download.pytorch.org/whl/cu118 \
+    --timeout 1200 && \
+    echo "✓ torchvision 和 torchaudio 安裝完成"
+
+# 3. 其他依賴（使用官方 PyPI）
+RUN echo "========== 安裝其他依賴 ==========" && \
+    pip install --no-cache-dir -r requirements-clean.txt --timeout 1200 || \
+    (echo "⚠️ 部分包安裝失敗，繼續..." && exit 0)
+
+# 4. 特殊包（可選）
+RUN echo "========== 安裝 Whisper（可選）==========" && \
+    pip install --no-cache-dir openai-whisper==20231117 || \
+    echo "⚠️ Whisper 跳過"
+# =========================================
+
+# ========== 運行階段 ==========
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    NUMBA_THREADING_LAYER=workqueue
+
+# 運行時依賴
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
+
+# 從構建階段複製
+COPY --from=builder /usr/local/lib/python3.10/dist-packages /usr/local/lib/python3.10/dist-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+WORKDIR /app
+
+# 複製應用
+COPY Linly_Talker_api/ /app/
+
+# 創建目錄
+RUN mkdir -p /app/media /app/staticfiles
+
+# 設置權限
+RUN chmod +x /app/manage.py
+
+EXPOSE 8007
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8007/api/health/ || exit 1
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8007"]
