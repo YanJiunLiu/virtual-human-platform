@@ -36,9 +36,9 @@ COPY osce-ai/requirements.txt .
 COPY osce-ai/clean_reqs.py .
 
 # ========== 過濾 requirements.txt ==========
-RUN python3 osce-ai/clean_reqs.py && \
-    pip install --no-cache-dir -r osce-ai/requirements-clean.txt && \
-    rm osce-ai/clean_reqs.py osce-ai/requirements-clean.txt
+RUN python3 clean_reqs.py && \
+    pip install --no-cache-dir -r requirements-clean.txt && \
+    rm clean_reqs.py requirements-clean.txt
 # =========================================
 
 # ========== 分批安裝（避免超時）==========
