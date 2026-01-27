@@ -132,6 +132,7 @@ services:
       - ./static:/app/osce-backend/static
       - ./fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
       - ./privkey.pem:/etc/ssl/private/privkey.pem:ro
+      - ./osce-ai/Linly_Talker_api/media:/app/media:ro
     depends_on:
       - backend
       - frontend
