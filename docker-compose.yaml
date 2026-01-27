@@ -66,9 +66,9 @@ services:
       - NUMBA_THREADING_LAYER=workqueue
     volumes:
       # 掛載 checkpoints（避免每次重新下載）
-      - ./Linly_Talker_api/Linly-Talker/checkpoints:/app/Linly-Talker/checkpoints
+      - ./osce-ai/Linly_Talker_api/Linly-Talker/checkpoints:/app/Linly-Talker/checkpoints
       # 掛載 media（持久化生成的文件）
-      - ./Linly_Talker_api/media:/app/media
+      - ./osce-ai/Linly_Talker_api/media:/app/media
     deploy:
       resources:
         reservations:
