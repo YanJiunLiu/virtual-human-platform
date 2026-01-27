@@ -90,7 +90,7 @@ services:
     image: ollama/ollama:latest
     container_name: osce-ollama
     ports:
-      - "11434:11434"
+      - "11436:11434"
     volumes:
       - ./ollama:/root/.ollama
     restart: unless-stopped
