@@ -6,7 +6,7 @@ volumes:
 
 
 networks:
-  app-network:
+  app-network-release:
     driver: bridge
 
 services:
@@ -33,7 +33,7 @@ services:
     ports:
       - "8001:8000"
     networks:
-      - app-network
+      - app-network-release
 
   frontend:
     build:
@@ -47,7 +47,7 @@ services:
             npm run build:admin && 
             npm run build:user"
     networks:
-      - app-network
+      - app-network-release
 
   ai-backend:
     build:
@@ -78,7 +78,7 @@ services:
               capabilities: [ gpu ]
     restart: unless-stopped
     networks:
-      - app-network
+      - app-network-release
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8007/api/health/" ]
       interval: 30s
@@ -95,7 +95,7 @@ services:
       - ./ollama:/root/.ollama
     restart: unless-stopped
     networks:
-      - app-network
+      - app-network-release
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:11434/api/tags" ]
       interval: 30s
@@ -112,7 +112,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - app-network
+      - app-network-release
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 30s
@@ -137,4 +137,4 @@ services:
       - backend
       - frontend
     networks:
-      - app-network
+      - app-network-release
