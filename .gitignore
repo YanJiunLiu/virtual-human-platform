@@ -30,3 +30,30 @@ public/~$sample.xlsx
 .git
 
 *.mp4
+
+
+# testing_data
+testing_data/
+
+# models
+osce-backend/backend_api/models/
+
+# media
+osce-backend/media/
+
+# checkpoints
+osce-backend/backend_api/linly_talker/checkpoints
+
+#gfpgan
+osce-backend/backend_api/linly_talker/gfpgan/
+
+# mac
+.DS_Store
+**.DS_Store
+
+# db
+osce-backend/db
+db/
+
+# test
+test.html

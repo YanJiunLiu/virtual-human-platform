@@ -31,7 +31,7 @@ services:
         exec gunicorn backend_api.wsgi:application --bind 0.0.0.0:8000 --workers 3
         "
     ports:
-      - "8001:8000"
+      - "8010:8000"
     networks:
       - app-network-release
 
@@ -90,14 +90,14 @@ services:
     image: ollama/ollama:latest
     container_name: osce-ollama-release
     ports:
-      - "11436:11434"
+      - "11400:11434"
     volumes:
       - ./ollama:/root/.ollama
     restart: unless-stopped
     networks:
       - app-network-release
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:11434/api/tags" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:11400/api/tags" ]
       interval: 30s
       timeout: 10s
       retries: 3
