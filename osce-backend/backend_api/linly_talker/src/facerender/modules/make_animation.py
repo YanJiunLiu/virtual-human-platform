@@ -62,9 +62,15 @@ def get_rotation_matrix(yaw, pitch, roll):
 
     return rot_mat
 
-def keypoint_transformation(kp_canonical, he, wo_exp=False):
-    kp = kp_canonical['value']    # (bs, k, 3) 
-    yaw, pitch, roll= he['yaw'], he['pitch'], he['roll']      
+import torch
+
+def keypoint_transformation(kp_canonical, he, wo_exp=False, device='cuda'):
+    # 1. 提取原始座標，確保它是連續的
+    kp = kp_canonical['value']
+    if device == 'mps':
+        kp = kp.contiguous()    # (bs, k, 3) 
+    
+    yaw, pitch, roll = he['yaw'], he['pitch'], he['roll']      
     yaw = headpose_pred_to_degree(yaw) 
     pitch = headpose_pred_to_degree(pitch)
     roll = headpose_pred_to_degree(roll)
@@ -76,39 +82,61 @@ def keypoint_transformation(kp_canonical, he, wo_exp=False):
     if 'roll_in' in he:
         roll = he['roll_in']
 
+    # 取得旋轉矩陣
     rot_mat = get_rotation_matrix(yaw, pitch, roll)    # (bs, 3, 3)
+    # 針對 Mac MPS 最佳化：確保旋轉矩陣在記憶體中也是整齊的
+    if device == 'mps':
+        rot_mat = rot_mat.contiguous()
 
     t, exp = he['t'], he['exp']
     if wo_exp:
-        exp =  exp*0  
+        exp = exp * 0  
     
-    # keypoint rotation
+    # 2. 關鍵點旋轉 (使用 einsum 後立即補上 .contiguous())
+    # 這是最容易在 Mac 上產生計算偏移的地方
     kp_rotated = torch.einsum('bmp,bkp->bkm', rot_mat, kp)
+    if device == 'mps':
+        kp_rotated = kp_rotated.contiguous()
 
-    # keypoint translation
-    t[:, 0] = t[:, 0]*0
-    t[:, 2] = t[:, 2]*0
-    t = t.unsqueeze(1).repeat(1, kp.shape[1], 1)
-    kp_t = kp_rotated + t
+    # 3. 關鍵點位移處理
+    # 原代碼：t[:, 0] = t[:, 0]*0 (這種切片操作會讓張量變得不連續)
+    t_fixed = t.clone() # 使用 clone 產生一份全新的、連續的記憶體
+    t_fixed[:, 0] = 0
+    t_fixed[:, 2] = 0
+    
+    # 廣播位移張量到所有關鍵點上，並再次確保連續性
+    t_expanded = t_fixed.unsqueeze(1).repeat(1, kp.shape[1], 1)
+    if device == 'mps':
+        t_expanded = t_expanded.contiguous()
+    
+    kp_t = kp_rotated + t_expanded
 
-    # add expression deviation 
+    # 4. 表情偏差值處理
+    # view 或 reshape 之後，建議也補上連續化，確保下一步加法運算正確
     exp = exp.view(exp.shape[0], -1, 3)
+    if device == 'mps':
+        exp = exp.contiguous()
     kp_transformed = kp_t + exp
 
-    return {'value': kp_transformed}
+    # 最後回傳時再確認一次
+    if device == 'mps':
+        return {'value': kp_transformed.contiguous()}
+    else:
+        return {'value': kp_transformed}
 
 
 
 def make_animation(source_image, source_semantics, target_semantics,
                             generator, kp_detector, he_estimator, mapping, 
                             yaw_c_seq=None, pitch_c_seq=None, roll_c_seq=None,
-                            use_exp=True, use_half=False):
+                            use_exp=True, use_half=False, device='cuda'):
+    print('make_animation device:', device)
     with torch.no_grad():
         predictions = []
 
         kp_canonical = kp_detector(source_image)
         he_source = mapping(source_semantics)
-        kp_source = keypoint_transformation(kp_canonical, he_source)
+        kp_source = keypoint_transformation(kp_canonical, he_source, device=device)
     
         for frame_idx in tqdm(range(target_semantics.shape[1]), 'Face Renderer:'):
             # still check the dimension
@@ -122,7 +150,7 @@ def make_animation(source_image, source_semantics, target_semantics,
             if roll_c_seq is not None:
                 he_driving['roll_in'] = roll_c_seq[:, frame_idx] 
             
-            kp_driving = keypoint_transformation(kp_canonical, he_driving)
+            kp_driving = keypoint_transformation(kp_canonical, he_driving, device=device)
                 
             kp_norm = kp_driving
             out = generator(source_image, kp_source=kp_source, kp_driving=kp_norm)

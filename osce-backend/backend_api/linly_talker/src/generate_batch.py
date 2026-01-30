@@ -49,7 +49,7 @@ def generate_blink_seq_randomly(num_frames):
     return ratio
 
 def get_data(first_coeff_path, audio_path, device, ref_eyeblink_coeff_path, still=False, idlemode=False, length_of_audio=False, use_blink=True, fps=25):
-
+    print('get_data device:', device)
     syncnet_mel_step_size = 16
 
     pic_name = os.path.splitext(os.path.split(first_coeff_path)[-1])[0]
@@ -99,13 +99,19 @@ def get_data(first_coeff_path, audio_path, device, ref_eyeblink_coeff_path, stil
     #     ref_coeff[:, :64] = refeyeblink_coeff[:num_frames, :64] 
     
     indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1).unsqueeze(0) # bs T 1 80 16
+    if device == 'mps':
+        indiv_mels = indiv_mels.contiguous()
 
     if use_blink:
         ratio = torch.FloatTensor(ratio).unsqueeze(0)                       # bs T
     else:
         ratio = torch.FloatTensor(ratio).unsqueeze(0).fill_(0.) 
                                # bs T
-    ref_coeff = torch.FloatTensor(ref_coeff).unsqueeze(0)                # bs 1 70
+    if device == 'mps':
+        ratio = ratio.contiguous()
+    ref_coeff = torch.FloatTensor(ref_coeff).unsqueeze(0) 
+    if device == 'mps':
+        ref_coeff = ref_coeff.contiguous()               # bs 1 70
 
     indiv_mels = indiv_mels.to(device)
     ratio = ratio.to(device)

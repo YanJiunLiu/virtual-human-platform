@@ -167,7 +167,7 @@ class AnimateFromCoeff():
         return checkpoint['epoch']
 
     def generate(self, x, video_save_dir, pic_path, crop_info, enhancer=None, background_enhancer=None, preprocess='crop', img_size=256, fps = 25):
-
+        print('generate device:', self.device)
         source_image=x['source_image'].type(torch.FloatTensor)
         source_semantics=x['source_semantics'].type(torch.FloatTensor)
         target_semantics=x['target_semantics_list'].type(torch.FloatTensor) 
@@ -178,7 +178,7 @@ class AnimateFromCoeff():
 
         predictions_video = make_animation(source_image, source_semantics, target_semantics,
                                         self.generator, self.kp_extractor, self.he_estimator, self.mapping, 
-                                        None, None, None, use_exp = True)
+                                        None, None, None, use_exp = True, device=self.device)
 
         predictions_video = predictions_video.reshape((-1,)+predictions_video.shape[2:])
         predictions_video = predictions_video[:frame_num]
@@ -186,6 +186,8 @@ class AnimateFromCoeff():
         video = []
         for idx in range(predictions_video.shape[0]):
             image = predictions_video[idx]
+            if self.device == 'mps':
+                image = image.contiguous()
             image = np.transpose(image.data.cpu().numpy(), [1, 2, 0]).astype(np.float32)
             video.append(image)
         result = img_as_ubyte(video)
