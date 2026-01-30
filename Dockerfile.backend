@@ -1,23 +1,38 @@
-# 使用 Ubuntu 24.04 官方映像
-FROM ubuntu:24.04
+# 1. 改用 NVIDIA 官方映像檔，確保 GPU 能驅動（推薦用 22.04 比較穩定，24.04 目前 CUDA 支援較新）
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
 # 設定工作目錄
 WORKDIR /app
 
-# 安裝基礎工具與 Python 3.13
-RUN apt-get update 
-RUN apt-get install -y git 
-RUN apt-get install -y software-properties-common
-RUN apt-get install -y curl
-RUN apt-get install -y build-essential
-RUN apt-get install -y wget
-RUN add-apt-repository ppa:deadsnakes/ppa -y 
-RUN apt-get update
-RUN apt-get install -y python3.13 
-RUN apt-get install -y python3.13-venv 
-RUN apt-get install -y python3-pip
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# 避免安裝過程出現互動視窗
+ENV DEBIAN_FRONTEND=noninteractive
 
+# 2. 整合安裝指令，減少鏡像層數 (Layers) 並補上遺失的編譯庫
+RUN apt-get update && apt-get install -y \
+    git \
+    software-properties-common \
+    curl \
+    build-essential \
+    wget \
+    # --- 解決編譯錯誤的關鍵庫 ---
+    python3.13-dev \
+    portaudio19-dev \    
+    libasound2-dev \     
+    ffmpeg \             
+    libgl1-mesa-glx \    
+    # --------------------------
+    && add-apt-repository ppa:deadsnakes/ppa -y \
+    && apt-get update \
+    && apt-get install -y python3.13 python3.13-venv \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 3. 確保 pip 是對應 Python 3.13 的最新版本
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13
+RUN python3.13 -m pip install --upgrade pip setuptools wheel
+
+# 複製專案檔案
 COPY ./osce-backend /app/osce-backend 
 WORKDIR /app/osce-backend
-RUN python3.13 -m pip install -r requirement.txt 
+
+# 4. 安裝 Python 套件
+RUN python3.13 -m pip install -r requirement.txt
