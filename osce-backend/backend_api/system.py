@@ -3,17 +3,19 @@ import os
 import sys
 import time
 import base64
+import re
 from yarl import URL
 from django.conf import settings
 from django.conf.urls.static import static
 from faster_whisper import WhisperModel
-
+from langchain_ollama.chat_models import ChatOllama
+from langchain_core.messages import HumanMessage
+from langchain_core.prompts import ChatPromptTemplate
 
 class BaseSystem:
     def __init__(self,request):
         self.request = request
         self.user = request.user
-
 
 class CSMUSystem(BaseSystem):
 
@@ -42,12 +44,52 @@ class WhisperSystem(BaseSystem):
             )
         return cls.model
 
-    def transcribe(self, audio_file):
+    def stt(self, audio_file):
         model = WhisperSystem.load_model()
         segments, info = model.transcribe(audio_file, beam_size=5,vad_filter=True)
         combined_text = "".join(segment.text for segment in segments).strip()
         return combined_text
 
+    @staticmethod
+    def parse_number(value):
+        if value is None:
+            return 0
+        value = str(value).strip()
+        value = value.replace('%', '').replace('Hz', '')
+        try:
+            return int(value)
+        except:
+            return 0
+
+    def tts(self, text):
+        timestamp = int(time.time() * 1000)
+        output_audio_path = os.path.join(settings.AUDIO_DIR, f'audio_{timestamp}.wav')
+        linly_path = os.path.join(settings.BASE_DIR, 'backend_api/linly_talker')
+        original_cwd = os.getcwd()
+        os.chdir(linly_path)
+        if linly_path not in sys.path:
+            sys.path.insert(0, linly_path)
+        from TTS import EdgeTTS
+        edge_tts = EdgeTTS()
+        tts_params = {
+            'voice': 'zh-CN-XiaoxiaoNeural',
+            'rate': '+0%',
+            'volume': '+50%',
+            'pitch': '+0Hz',
+        }
+        edge_tts.predict(
+                TEXT=text,
+                VOICE=tts_params.get('voice'),
+                RATE=self.parse_number(tts_params.get('rate')),
+                VOLUME=self.parse_number(tts_params.get('volume')),
+                PITCH=self.parse_number(tts_params.get('pitch')),
+                OUTPUT_FILE=output_audio_path,
+                OUTPUT_SUBS=None
+            )
+        os.chdir(original_cwd)
+        relative_path = os.path.relpath(output_audio_path, settings.MEDIA_ROOT)
+        audio_url = os.path.join(settings.MEDIA_URL, relative_path)
+        return audio_url
 
     def generate_idle_video(self, image_path, duration):
         linly_path = os.path.join(settings.BASE_DIR, 'backend_api/linly_talker')
@@ -126,6 +168,33 @@ class WhisperSystem(BaseSystem):
         except Exception as e:
             print(f"儲存圖片失敗: {str(e)}")
             return None
+
+    def chat_ollama(self, text, system_content="你是一位病患"):
+        llm = ChatOllama(
+            base_url=settings.OLLAMA_BASE_URL,
+            model=settings.OLLAMA_MODEL,
+        )
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_content),
+            ("human", "{input}"),
+        ])
+        chain = prompt | llm
+        response = chain.invoke({"input": text})
+        return response.content
+
+    def clean_text_content(self, text: str) -> str:
+        text = re.sub(r'\*+', '', text)
+        text = re.sub(r'#+\s*', '', text)
+        text = re.sub(r'`+', '', text)
+        text = re.sub(r'~+', '', text)
+        text = re.sub(r'_+', '', text)
+        text = re.sub(r'\[.*?\]', '', text)
+        text = re.sub(r'[<>{}]', '', text)
+        text = re.sub(r'^\s*[-•]\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^\s*\d+\.\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'\s+', ' ', text)
+        text = text.strip()
+        return text
 
 
 

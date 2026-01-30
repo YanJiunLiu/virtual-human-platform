@@ -269,6 +269,9 @@ WHISPER_MODEL_PATH = os.getenv("WHISPER_MODEL_PATH", os.path.join(BASE_DIR, 'bac
 MEDIA_DIR = os.getenv("MEDIA_DIR", os.path.join(BASE_DIR, 'backend_api/media'))
 os.makedirs(MEDIA_DIR, exist_ok=True)
 
+AUDIO_DIR = os.getenv("AUDIO_DIR", os.path.join(MEDIA_DIR, 'backend_api/media/audios'))
+os.makedirs(AUDIO_DIR, exist_ok=True)
+
 PICTURE_DIR = os.getenv("PICTURE_DIR", os.path.join(MEDIA_DIR, 'backend_api/media/pictures'))
 os.makedirs(PICTURE_DIR, exist_ok=True)
 
@@ -277,3 +280,6 @@ os.makedirs(LINLY_TALKER_CHECKPOINTS_DIR, exist_ok=True)
 
 LINLY_TALKER_CONFIG_DIR = os.getenv("LINLY_TALKER_CONFIG_DIR", os.path.join(BASE_DIR, 'backend_api/linly_talker/src/config'))
 os.makedirs(LINLY_TALKER_CONFIG_DIR, exist_ok=True)
+
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://192.168.0.46:11444/")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "alibayram/medgemma")

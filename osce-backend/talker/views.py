@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import action
-from langchain_community.chat_models import ChatOllama
 from langchain_core.messages import HumanMessage
 from drf_spectacular.views import (
     get_relative_url, 
@@ -20,7 +19,6 @@ from drf_spectacular.utils import (
 from talker.serializers import (
     ChatSerializer,
     AudioSerializer,
-    WebRTCSerializer,
     VideoSerializer
 )
 from talker.decorators import talker, atalker
@@ -31,7 +29,7 @@ from rest_framework.permissions import AllowAny
 @extend_schema_view(
     create=extend_schema(
         description="Chat with LLM.",
-        request=ChatSerializer,
+        request=AudioSerializer,
         responses={201: {"type": "string"}},
     ),
     stt=extend_schema(
@@ -42,10 +40,31 @@ from rest_framework.permissions import AllowAny
 )
 class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     permission_classes = [AllowAny]
-    serializer_class = ChatSerializer
+    serializer_class = AudioSerializer
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    @talker()
     def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        audio_obj = serializer.validated_data['audio_file']
+        text = request.system.stt(audio_obj)
+        clean_text = request.system.clean_text_content(text)
+        ollama_response = request.system.chat_ollama(text=clean_text, system_content="你是一位生了重病的病患,請依照發燒的症狀闡述自己的狀況") 
+        response = request.system.clean_text_content(ollama_response)
+        audio_path = request.system.tts(response)
+        full_url = request.build_absolute_uri(audio_path)
+        return Response({
+            "success": True,    
+            "data": {
+                "text": response,
+                "audio_url": full_url
+            }
+        }, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=["post"], serializer_class=ChatSerializer)
+    def ask(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -57,7 +76,7 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         response = chat.invoke([HumanMessage(content=serializer.validated_data["message"])])
         
         return Response(response.content)
-    
+
     @talker()
     @action(detail=False, methods=["post"], serializer_class=AudioSerializer)
     def stt(self, request, *args, **kwargs):
@@ -65,7 +84,7 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         
         if serializer.is_valid():
             audio_obj = serializer.validated_data['audio_file']
-            text = request.system.transcribe(audio_obj)
+            text = request.system.stt(audio_obj)
             return Response({
                 "success": True, 
                 "data": {
