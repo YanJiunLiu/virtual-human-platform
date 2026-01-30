@@ -1,0 +1,66 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 虛擬環境
+env/
+venv/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# IDE 設定檔
+.vscode/
+.idea/
+*.swp
+
+# 作業系統檔案
+.DS_Store
+Thumbs.db
+
+# 輸出檔案
+output.jpg
+output.xlsx
+outputs/
+static/
+logs/
+
+# pip wheel files
+*.whl
+
+# 日誌檔
+*.log
+
+# 抓包或下載的檔案（可自行調整）
+*.tif
+*Bak.py
+
+# db
+db.sqlite3
+
+#draw.io
+db_level.drawio
+
+
+Dockerfile
+
+# testing_data
+testing_data/
+
+# models
+backend_api/models/
+
+# media
+media/
+
+# checkpoints
+backend_api/linly_talker/checkpoints
+
+#gfpgan
+backend_api/linly_talker/gfpgan/
+
+# mac
+.DS_Store

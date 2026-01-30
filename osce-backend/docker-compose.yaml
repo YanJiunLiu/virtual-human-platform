@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  web:
+    build: .
+    volumes:
+      - .:/app/CSMU/backend_api
+      - /home/osce/CSMU/CSMU/backend_api/db:/app/CSMU/backend_api/db
+      - /home/osce/CSMU/CSMU/backend_api/log:/app/CSMU/backend_api/log
+      - /home/osce/CSMU/CSMU/backend_api/images:/app/CSMU/backend_api/images
+    working_dir: /app
+    expose:
+      - "8000"
+    command: >
+      bash -c "
+      cd /app/CSMU/backend_api &&
+      python3.13 manage.py makemigrations &&
+      python3.13 manage.py migrate &&
+      python3.13 manage.py collectstatic --noinput --settings=backend_api.settings &&
+      exec gunicorn backend_api.wsgi:application --bind 0.0.0.0:8000 --workers 3
+      "
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "12001:80"
+      - "12000:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./static:/app/CSMU/backend_api/static
+      - ./fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
+      - ./privkey.pem:/etc/ssl/private/privkey.pem:ro
+    depends_on:
+      - web
