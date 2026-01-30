@@ -1,15 +1,9 @@
-# 1. 直接繼承 NVIDIA 官方為 Ubuntu 24.04 打造的映像檔
-# devel 版本包含編譯工具（nvcc 等），適合需要編譯套件（如 pyaudio/moviepy）的環境
 FROM nvidia/cuda:12.6.3-devel-ubuntu24.04
 
-# 設定工作目錄
 WORKDIR /app
 
-# 避免安裝過程出現互動提示
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 2. 安裝基礎工具與 Python 3.13 的依賴
-# 注意：這裡不再需要手動安裝 CUDA，因為基礎鏡像已經帶了
 RUN apt-get update && apt-get install -y \
     git \
     software-properties-common \
@@ -25,21 +19,14 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 3. 安裝 Python 3.13 (來自 deadsnakes PPA)
 RUN add-apt-repository ppa:deadsnakes/ppa -y \
     && apt-get update \
     && apt-get install -y python3.13 python3.13-venv python3.13-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# 4. 安裝並升級 pip
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13 \
     && python3.13 -m pip install --upgrade pip setuptools wheel
 
-# 5. 加速優化：先複製需求清單並安裝套件
 COPY ./osce-backend/requirement.txt /app/requirement.txt
-# 使用 --no-cache-dir 減少空間佔用
-RUN python3.13 -m pip install --no-cache-dir -r /app/requirement.txt
-
-# 6. 最後複製程式碼
+RUN python3.13 -m pip install --no-cache-dir --break-system-packages -r /app/requirement.txt
 COPY ./osce-backend /app/osce-backend 
 WORKDIR /app/osce-backend
