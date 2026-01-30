@@ -51,7 +51,8 @@ class SadTalker():
 
         os.makedirs(result_dir, exist_ok=True)
         self.sadtalker_paths = init_path(self.checkpoint_path, self.config_path, size, False, preprocess)
-        
+        self.animate_from_coeff = AnimateFromCoeff(self.sadtalker_paths, self.device)
+        self.audio_to_coeff = Audio2Coeff(self.sadtalker_paths, self.device)
         self.preprocess_model = CropAndExtract(self.sadtalker_paths, self.device)
 
         time_tag = str(uuid.uuid4())
