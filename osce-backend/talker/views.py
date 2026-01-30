@@ -25,7 +25,7 @@ from talker.serializers import (
 )
 from talker.decorators import talker, atalker
 from asgiref.sync import async_to_sync
-
+from rest_framework.permissions import AllowAny
 # Create your views here.
 @extend_schema(tags=["對話"])
 @extend_schema_view(
@@ -33,10 +33,15 @@ from asgiref.sync import async_to_sync
         description="Chat with LLM.",
         request=ChatSerializer,
         responses={201: {"type": "string"}},
+    ),
+    stt=extend_schema(
+        description="STT with LLM.",
+        request=AudioSerializer,
+        responses={201: {"type": "string"}},
     )
 )
 class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = ChatSerializer
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
@@ -54,14 +59,12 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         return Response(response.content)
     
     @talker()
-    @action(detail=False, methods=["post"])
-    def test_audio(self, request, *args, **kwargs):
+    @action(detail=False, methods=["post"], serializer_class=AudioSerializer)
+    def stt(self, request, *args, **kwargs):
         serializer = AudioSerializer(data=request.data)
         
         if serializer.is_valid():
             audio_obj = serializer.validated_data['audio_file']
-            print(f"Successfully received: {audio_obj.name}, size: {audio_obj.size}")
-            
             text = request.system.transcribe(audio_obj)
             return Response({
                 "success": True, 
@@ -77,23 +80,6 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
     
-    @talker()
-    @action(detail=False, methods=["post"], serializer_class=WebRTCSerializer)
-    def rtc_offer(self, request, *args, **kwargs): 
-        print(request.data)
-        serializer = WebRTCSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        sdp = serializer.validated_data.get("sdp")
-        sdp_type = serializer.validated_data.get("type")
-
-        try:
-            # 同步環境下使用 async_to_sync 是正確的
-            answer = async_to_sync(request.system.offer)(sdp=sdp, sdp_type=sdp_type)
-            return Response(answer)
-        except Exception as e:  
-            return Response({"error": str(e)}, status=500)
-        
     @talker()
     @action(detail=False, methods=["post"], serializer_class=VideoSerializer)
     def idle_video(self, request, *args, **kwargs):
