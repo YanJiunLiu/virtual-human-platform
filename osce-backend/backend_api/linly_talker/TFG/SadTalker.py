@@ -51,12 +51,8 @@ class SadTalker():
 
         os.makedirs(result_dir, exist_ok=True)
         self.sadtalker_paths = init_path(self.checkpoint_path, self.config_path, size, False, preprocess)
-        print(self.sadtalker_paths)
-            
-        self.audio_to_coeff = Audio2Coeff(self.sadtalker_paths, self.device)
-        self.preprocess_model = CropAndExtract(self.sadtalker_paths, self.device)
         
-        self.animate_from_coeff = AnimateFromCoeff(self.sadtalker_paths, self.device)
+        self.preprocess_model = CropAndExtract(self.sadtalker_paths, self.device)
 
         time_tag = str(uuid.uuid4())
         save_dir = os.path.join(result_dir, time_tag)
@@ -96,8 +92,13 @@ class SadTalker():
         #crop image and extract 3dmm from image
         first_frame_dir = os.path.join(save_dir, 'first_frame_dir')
         os.makedirs(first_frame_dir, exist_ok=True)
+        """
+            Face Detection and 3DMM Extraction from image 
+            first_coeff_path: 3DMM coefficients of the first frame
+            crop_pic_path: cropped image of the first frame
+            crop_info: information of the cropped image
+        """
         first_coeff_path, crop_pic_path, crop_info = self.preprocess_model.generate(pic_path, first_frame_dir, preprocess, True, size)
-        print(first_coeff_path, crop_info)
         if first_coeff_path is None:
             raise AttributeError("No face is detected")
 
@@ -137,13 +138,17 @@ class SadTalker():
             batch = get_data(first_coeff_path, audio_path, self.device, ref_eyeblink_coeff_path=ref_eyeblink_coeff_path, still=still_mode, \
                 idlemode=use_idle_mode, length_of_audio=length_of_audio, use_blink=use_blink, fps = fps) # longer audio?
             coeff_path = self.audio_to_coeff.generate(batch, save_dir, pose_style, ref_pose_coeff_path)
-
+        
+        """
+            目的：將原始的影像和3DMM係數封裝成神經渲染器(Face Render)可以讀取的數據包(data)
+        """
         #coeff2video
         data = get_facerender_data(coeff_path, crop_pic_path, first_coeff_path, audio_path, batch_size, still_mode=still_mode, \
             preprocess=preprocess, size=size, expression_scale = exp_scale, facemodel=facerender)
+        """
+            目的：將數據包(data)輸入神經渲染器(Face Render)，生成最終的影片
+        """
         return_path = self.animate_from_coeff.generate(data, save_dir,  pic_path, crop_info, enhancer='gfpgan' if use_enhancer else None, preprocess=preprocess, img_size=size, fps = fps)
-        # video_name = data['video_name']
-        print(f'The generated video is saved in {return_path}')
 
         del self.preprocess_model
         # del self.audio_to_coeff

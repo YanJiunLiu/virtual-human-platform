@@ -7,8 +7,8 @@ from yarl import URL
 from django.conf import settings
 from django.conf.urls.static import static
 from faster_whisper import WhisperModel
-from aiortc import RTCPeerConnection, RTCSessionDescription
-from aiortc.contrib.media import MediaPlayer
+# from aiortc import RTCPeerConnection, RTCSessionDescription
+# from aiortc.contrib.media import MediaPlayer
 
 
 class BaseSystem:
@@ -93,7 +93,6 @@ class WhisperSystem(BaseSystem):
         os.chdir(original_cwd)
         relative_path = os.path.relpath(video_path, settings.MEDIA_ROOT)
         media_url = os.path.join(settings.MEDIA_URL, relative_path)
-        print(media_url)
         return media_url
             
     def save_base64_image(self, base64_obj, filename):
@@ -131,26 +130,26 @@ class WhisperSystem(BaseSystem):
             return None
 
 
-    async def offer(sdp, type):
-        pc = RTCPeerConnection()
+    # async def offer(sdp, type):
+    #     pc = RTCPeerConnection()
 
-        player = MediaPlayer('idle_video.mp4')
+    #     player = MediaPlayer('idle_video.mp4')
 
-        @pc.on("track")
-        def on_track(track):
-            if track.kind == "audio":
-                pass
+    #     @pc.on("track")
+    #     def on_track(track):
+    #         if track.kind == "audio":
+    #             pass
 
-        if player.video:
-            pc.addTrack(player.video)
+    #     if player.video:
+    #         pc.addTrack(player.video)
 
-        offer = RTCSessionDescription(sdp=sdp, type=type)
-        await pc.setRemoteDescription(offer)
+    #     offer = RTCSessionDescription(sdp=sdp, type=type)
+    #     await pc.setRemoteDescription(offer)
 
-        answer = await pc.createAnswer()
-        await pc.setLocalDescription(answer)
+    #     answer = await pc.createAnswer()
+    #     await pc.setLocalDescription(answer)
 
-        return {
-            "sdp": pc.localDescription.sdp,
-            "type": pc.localDescription.type
-        }
+    #     return {
+    #         "sdp": pc.localDescription.sdp,
+    #         "type": pc.localDescription.type
+    #     }
