@@ -207,7 +207,16 @@ class AnimateFromCoeff():
         # save_video(path, result, fps, img_size)
         print(path)
         # mimsave
-        imageio.mimsave(path, result,  fps=float(fps))
+        import platform
+        codec ='libx264'
+        if platform.system() == 'Linux':
+            try:
+                result = subprocess.run(['nvidia-smi'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                if result.returncode == 0:
+                    codec = 'h264_nvenc'
+            except:
+                pass
+        imageio.mimsave(path, result,  fps=float(fps), codec=codec)
         
         av_path = os.path.join(video_save_dir, video_name)
         return_path = av_path 
