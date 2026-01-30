@@ -56,7 +56,10 @@ INSTALLED_APPS = [
     'rules.apps.AutodiscoverRulesConfig',
     'drf_spectacular',
     'corsheaders',
+    'channels',
 ]
+
+ASGI_APPLICATION = 'backend_api.routing.application'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

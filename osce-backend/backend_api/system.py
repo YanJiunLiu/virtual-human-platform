@@ -7,8 +7,6 @@ from yarl import URL
 from django.conf import settings
 from django.conf.urls.static import static
 from faster_whisper import WhisperModel
-# from aiortc import RTCPeerConnection, RTCSessionDescription
-# from aiortc.contrib.media import MediaPlayer
 
 
 class BaseSystem:
@@ -130,26 +128,4 @@ class WhisperSystem(BaseSystem):
             return None
 
 
-    # async def offer(sdp, type):
-    #     pc = RTCPeerConnection()
 
-    #     player = MediaPlayer('idle_video.mp4')
-
-    #     @pc.on("track")
-    #     def on_track(track):
-    #         if track.kind == "audio":
-    #             pass
-
-    #     if player.video:
-    #         pc.addTrack(player.video)
-
-    #     offer = RTCSessionDescription(sdp=sdp, type=type)
-    #     await pc.setRemoteDescription(offer)
-
-    #     answer = await pc.createAnswer()
-    #     await pc.setLocalDescription(answer)
-
-    #     return {
-    #         "sdp": pc.localDescription.sdp,
-    #         "type": pc.localDescription.type
-    #     }

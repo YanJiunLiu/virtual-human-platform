@@ -26,3 +26,6 @@ tensorboardx==2.6.4
 transformers==5.0.0
 kornia==0.8.2
 numpy==2.3.0
+aiortc==1.14.0
+channels==4.3.2
+uvicorn[standard]
