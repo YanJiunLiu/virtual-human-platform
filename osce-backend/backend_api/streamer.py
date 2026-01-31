@@ -13,7 +13,6 @@ class VideoLoopTrack(MediaStreamTrack):
         self.stream = self.container.streams.video[0]
         self.iterator = self.container.decode(self.stream)
         
-        # 取得影片原始的 FPS，如果抓不到則預設 30
         self.fps = self.stream.average_rate
         if self.fps is None:
             self.fps = 30
@@ -21,29 +20,38 @@ class VideoLoopTrack(MediaStreamTrack):
         self.last_time = None
         self._timestamp = 0
 
+        self.video_queue = asyncio.Queue()
+    
+    async def add_video_to_streamer(self, video_path):
+        container = av.open(video_path)
+        stream = container.streams.video[0]
+        for frame in container.decode(stream):
+            new_frame = av.VideoFrame.from_image(frame.to_image())
+            await self.video_queue.put(new_frame)
+        container.close()
+
     async def recv(self):
-        # --- 核心限速邏輯 ---
         if self.last_time is not None:
-            # 計算每一張影格之間應該間隔多久 (例如 1/30 秒)
             wait_time = (1 / self.fps) - (time.time() - self.last_time)
             if wait_time > 0:
                 await asyncio.sleep(wait_time)
         
         self.last_time = time.time()
 
-        # 1. 讀取畫面
-        try:
-            frame = next(self.iterator)
-        except (StopIteration, av.EOFError):
-            self.container.seek(0)
-            self.iterator = self.container.decode(self.stream)
-            frame = next(self.iterator)
+        if not self.video_queue.empty():
+            # 1. 如果隊列有影格，優先播放 (例如對話影片)
+            frame = await self.video_queue.get()
+        else:
+            # 2. 否則從循環影片中取 
+            try:
+                frame = next(self.iterator)
+            except (StopIteration, av.EOFError):
+                self.container.seek(0)
+                self.iterator = self.container.decode(self.stream)
+                frame = next(self.iterator)
 
-        # 2. 修正時間戳 (WebRTC 標準通常使用 90000 為 time_base)
-        # 每秒 90000 個單位，若 30fps，每張圖間隔 3000
         self._timestamp += int(90000 / self.fps)
         
-        # 建立新的影格並賦予正確的時鐘頻率
         new_frame = av.VideoFrame.from_image(frame.to_image())
         new_frame.pts = self._timestamp
         new_frame.time_base = Fraction(1, 90000)

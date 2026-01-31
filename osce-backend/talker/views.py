@@ -1,6 +1,6 @@
 from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import action
 from langchain_core.messages import HumanMessage
@@ -21,9 +21,9 @@ from talker.serializers import (
     AudioSerializer,
     VideoSerializer
 )
-from talker.decorators import talker, atalker
-from asgiref.sync import async_to_sync
-from rest_framework.permissions import AllowAny
+from talker.decorators import talker
+
+
 # Create your views here.
 @extend_schema(tags=["對話"])
 @extend_schema_view(
@@ -32,10 +32,29 @@ from rest_framework.permissions import AllowAny
         request=AudioSerializer,
         responses={201: {"type": "string"}},
     ),
+    ask=extend_schema(
+        description="Ask LLM.",
+        request=ChatSerializer,
+        responses={201: {"type": "string"}},
+        exclude=True
+    ),
     stt=extend_schema(
         description="STT with LLM.",
         request=AudioSerializer,
         responses={201: {"type": "string"}},
+        exclude=True
+    ),
+    idle_video=extend_schema(
+        description="Idle video.",
+        request=VideoSerializer,
+        responses={201: {"type": "string"}},
+        exclude=True
+    ),
+    add_video_to_streamer=extend_schema(
+        description="Add video to streamer.",
+        request=AudioSerializer,
+        responses={201: {"type": "string"}},
+        exclude=True
     )
 )
 class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -59,20 +78,23 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             patient_id="1"
         )
         print("absolute_image_path", absolute_image_path)
-        absolute_audio_path = request.system.build_absolute_audio_path(
-            relative_audio_path = relative_audio_path
+        absolute_audio_path = request.system.build_absolute_output_path(
+            relative_output_path = relative_audio_path
         )
         relative_media_path = request.system.generate_video(
             image_path=absolute_image_path,
             audio_path=absolute_audio_path
         )
-        media_url = request.build_absolute_uri(relative_media_path)
+        absolute_media_path = request.system.build_absolute_output_path(
+            relative_output_path = relative_media_path
+        )
+        request.system.add_video_to_streamer(
+            video_path=absolute_media_path
+        )
         return Response({
             "success": True,    
             "data": {
-                "text": response,
-                "audio_url": audio_url,
-                "media_url": media_url
+                "message": "開始插播影片"
             }
         }, status=status.HTTP_200_OK)
     
@@ -137,7 +159,20 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 "video_url": full_url
             }
         }, status=status.HTTP_200_OK)
-        
+    
+    @talker()
+    @action(detail=False, methods=["post"], serializer_class=AudioSerializer)
+    def add_video_to_streamer(self, request, *args, **kwargs):
+        request.system.add_video_to_streamer(
+            video_path="/Users/yanjiunliu/Workspace/itri/osce-csmu/osce-backend/media/videos/923c97b1-1525-4c00-bdcc-51a01d411988/1_audio_1769821832584_full.mp4"
+        )
+        return Response({
+            "success": True,    
+            "data": {
+                "message": "開始插播影片"
+            }
+        }, status=status.HTTP_200_OK)
+    
 @extend_schema(exclude=True)
 class  TalkerSpectacularAPIView(SpectacularAPIView):
     """

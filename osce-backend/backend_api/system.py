@@ -11,6 +11,8 @@ from faster_whisper import WhisperModel
 from langchain_ollama.chat_models import ChatOllama
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
+from backend_api.connection_manager import stream_manager
+from asgiref.sync import async_to_sync
 
 class BaseSystem:
     def __init__(self,request):
@@ -175,8 +177,8 @@ class WhisperSystem(BaseSystem):
     def get_image_path(self, patient_id):
         return os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
 
-    def build_absolute_audio_path(self, relative_audio_path):
-        clean_relative_path = relative_audio_path.lstrip('/')
+    def build_absolute_output_path(self, relative_output_path):
+        clean_relative_path = relative_output_path.lstrip('/')
         return os.path.join(settings.OUTPUT_ROOT_DIR, clean_relative_path)
 
     def chat_ollama(self, text, system_content="你是一位病患"):
@@ -206,5 +208,7 @@ class WhisperSystem(BaseSystem):
         text = text.strip()
         return text
 
-
-
+    def add_video_to_streamer(self, video_path, patient_id='1'):
+        current_track = stream_manager.get_track(patient_id)
+        print("current_track", current_track)
+        async_to_sync(current_track.add_video_to_streamer)(video_path)
