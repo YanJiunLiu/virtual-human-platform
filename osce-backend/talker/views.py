@@ -53,13 +53,26 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         clean_text = request.system.clean_text_content(text)
         ollama_response = request.system.chat_ollama(text=clean_text, system_content="你是一位生了重病的病患,請依照發燒的症狀闡述自己的狀況") 
         response = request.system.clean_text_content(ollama_response)
-        audio_path = request.system.tts(response)
-        full_url = request.build_absolute_uri(audio_path)
+        relative_audio_path = request.system.tts(response)
+        audio_url = request.build_absolute_uri(relative_audio_path)
+        absolute_image_path = request.system.get_image_path(
+            patient_id="1"
+        )
+        print("absolute_image_path", absolute_image_path)
+        absolute_audio_path = request.system.build_absolute_audio_path(
+            relative_audio_path = relative_audio_path
+        )
+        relative_media_path = request.system.generate_video(
+            image_path=absolute_image_path,
+            audio_path=absolute_audio_path
+        )
+        media_url = request.build_absolute_uri(relative_media_path)
         return Response({
             "success": True,    
             "data": {
                 "text": response,
-                "audio_url": full_url
+                "audio_url": audio_url,
+                "media_url": media_url
             }
         }, status=status.HTTP_200_OK)
     
@@ -108,8 +121,15 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         patient_id = serializer.validated_data.get("patient_id")
         duration = serializer.validated_data.get("duration")
         
-        image_path = request.system.save_base64_image(image_base64, f"{patient_id}.jpg")
-        relative_path = request.system.generate_idle_video(image_path, duration)
+        image_path = request.system.save_base64_image(
+            base64_obj=image_base64, 
+            patient_id=patient_id
+        )
+        relative_path = request.system.generate_video(
+            image_path=image_path, 
+            duration=duration,
+            use_idle_mode=True
+        )
         full_url = request.build_absolute_uri(relative_path)
         return Response({
             "success": True,    

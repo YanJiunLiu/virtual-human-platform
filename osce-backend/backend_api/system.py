@@ -87,11 +87,17 @@ class WhisperSystem(BaseSystem):
                 OUTPUT_SUBS=None
             )
         os.chdir(original_cwd)
-        relative_path = os.path.relpath(output_audio_path, settings.MEDIA_ROOT)
+        relative_path = os.path.relpath(output_audio_path, settings.MEDIA_DIR)
         audio_url = os.path.join(settings.MEDIA_URL, relative_path)
         return audio_url
+    
+    @staticmethod
+    def silent_audio_path():
+        timestamp = int(time.time() * 1000)
+        silent_audio_path = os.path.join(settings.AUDIO_DIR, f'silent_{timestamp}.wav')
+        return silent_audio_path
 
-    def generate_idle_video(self, image_path, duration):
+    def generate_video(self, image_path, duration=0, audio_path=None, use_idle_mode=False):
         linly_path = os.path.join(settings.BASE_DIR, 'backend_api/linly_talker')
         original_cwd = os.getcwd()
         os.chdir(linly_path)
@@ -103,13 +109,15 @@ class WhisperSystem(BaseSystem):
             config_path='src/config',
             lazy_load=True
         )
-        
-        timestamp = int(time.time() * 1000)
-        silent_audio_path = os.path.join(settings.MEDIA_DIR, f'silent_{timestamp}.wav')
-        
+        if use_idle_mode:
+            audio_path = None
+            result_dir = os.path.join(settings.MEDIA_DIR, 'idle_videos')
+        else:
+            result_dir = os.path.join(settings.MEDIA_DIR, 'videos')
+
         video_path = sad_talker.execute(
             source_image=image_path,
-            driven_audio=silent_audio_path,
+            driven_audio=audio_path,
             preprocess='full',
             still_mode=False,
             use_enhancer=False,
@@ -121,45 +129,40 @@ class WhisperSystem(BaseSystem):
             use_ref_video=False,
             ref_video=None,
             ref_info=None,
-            use_idle_mode=True,
+            use_idle_mode=use_idle_mode,
             length_of_audio=duration,
             use_blink=True,
-            result_dir=os.path.join(settings.MEDIA_DIR, 'idle_videos')
+            result_dir=result_dir
         )
         
-        if os.path.exists(silent_audio_path):
-            os.remove(silent_audio_path)
-        
         os.chdir(original_cwd)
-        relative_path = os.path.relpath(video_path, settings.MEDIA_ROOT)
-        media_url = os.path.join(settings.MEDIA_URL, relative_path)
-        return media_url
-            
-    def save_base64_image(self, base64_obj, filename):
+        relative_path = os.path.relpath(video_path, settings.MEDIA_DIR)
+        return relative_path
+
+    @staticmethod
+    def image_name(patient_id):
+        return f"{patient_id}.jpg"
+
+    def save_base64_image(self, base64_obj, patient_id):
         try:
             base64_obj.seek(0)
             raw_content = base64_obj.read()
-        
-            # 檢查是否為原始二進位圖片 (PNG 開頭通常是 b'\x89PNG')
-            # 如果是二進位，直接寫入檔案即可
+
             if raw_content.startswith(b'\x89PNG') or raw_content.startswith(b'\xff\xd8'):
                 img_data = raw_content
             else:
-                # 如果不是二進位，才嘗試當作字串處理
                 try:
                     base64_str = raw_content.decode('utf-8')
                     if "," in base64_str:
                         base64_str = base64_str.split(",")[1]
                     img_data = base64.b64decode(base64_str)
                 except (UnicodeDecodeError, ValueError):
-                    # 如果連 decode 都失敗，那可能就是原始資料
                     img_data = raw_content
 
-            # 儲存
             if not os.path.exists(settings.PICTURE_DIR):
                 os.makedirs(settings.PICTURE_DIR, exist_ok=True)
 
-            file_path = os.path.join(settings.PICTURE_DIR, filename)
+            file_path = os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
             with open(file_path, "wb") as f:
                 f.write(img_data)
         
@@ -168,6 +171,13 @@ class WhisperSystem(BaseSystem):
         except Exception as e:
             print(f"儲存圖片失敗: {str(e)}")
             return None
+
+    def get_image_path(self, patient_id):
+        return os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
+
+    def build_absolute_audio_path(self, relative_audio_path):
+        clean_relative_path = relative_audio_path.lstrip('/')
+        return os.path.join(settings.OUTPUT_ROOT_DIR, clean_relative_path)
 
     def chat_ollama(self, text, system_content="你是一位病患"):
         llm = ChatOllama(

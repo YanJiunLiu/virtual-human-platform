@@ -266,13 +266,16 @@ MEDIA_URL = '/media/'
 
 WHISPER_MODEL_PATH = os.getenv("WHISPER_MODEL_PATH", os.path.join(BASE_DIR, 'backend_api/models/whisper-v3-ct2'))
 
-MEDIA_DIR = os.getenv("MEDIA_DIR", os.path.join(BASE_DIR, 'backend_api/media'))
+OUTPUT_ROOT_DIR = os.getenv("OUTPUT_ROOT_DIR", BASE_DIR)
+os.makedirs(OUTPUT_ROOT_DIR, exist_ok=True)
+
+MEDIA_DIR = os.getenv("MEDIA_DIR", os.path.join(OUTPUT_ROOT_DIR, 'media'))
 os.makedirs(MEDIA_DIR, exist_ok=True)
 
-AUDIO_DIR = os.getenv("AUDIO_DIR", os.path.join(MEDIA_DIR, 'backend_api/media/audios'))
+AUDIO_DIR = os.getenv("AUDIO_DIR", os.path.join(MEDIA_DIR, 'audios'))
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
-PICTURE_DIR = os.getenv("PICTURE_DIR", os.path.join(MEDIA_DIR, 'backend_api/media/pictures'))
+PICTURE_DIR = os.getenv("PICTURE_DIR", os.path.join(MEDIA_DIR, 'pictures'))
 os.makedirs(PICTURE_DIR, exist_ok=True)
 
 LINLY_TALKER_CHECKPOINTS_DIR = os.getenv("LINLY_TALKER_CHECKPOINTS_DIR", os.path.join(BASE_DIR, 'backend_api/linly_talker/checkpoints'))
