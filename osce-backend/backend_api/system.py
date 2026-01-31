@@ -138,7 +138,7 @@ class WhisperSystem(BaseSystem):
         )
         
         os.chdir(original_cwd)
-        relative_path = os.path.relpath(video_path, settings.MEDIA_DIR)
+        relative_path = os.path.relpath(video_path, settings.OUTPUT_ROOT_DIR)
         return relative_path
 
     @staticmethod
@@ -210,5 +210,13 @@ class WhisperSystem(BaseSystem):
 
     def add_video_to_streamer(self, video_path, patient_id='1'):
         current_track = stream_manager.get_track(patient_id)
-        print("current_track", current_track)
         async_to_sync(current_track.add_video_to_streamer)(video_path)
+
+    def is_idle_video_exist(self, patient_id: str, duration: int)->str:
+        idle_video_path = os.path.join(settings.MEDIA_DIR, 'idle_videos', patient_id, f"{patient_id}_idlemode_{duration}_full.mp4")
+        if os.path.exists(idle_video_path):
+            relative_path = os.path.relpath(idle_video_path, settings.OUTPUT_ROOT_DIR)
+            return relative_path
+        else:
+            return None
+        

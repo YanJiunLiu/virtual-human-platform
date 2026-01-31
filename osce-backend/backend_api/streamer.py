@@ -39,10 +39,8 @@ class VideoLoopTrack(MediaStreamTrack):
         self.last_time = time.time()
 
         if not self.video_queue.empty():
-            # 1. 如果隊列有影格，優先播放 (例如對話影片)
             frame = await self.video_queue.get()
         else:
-            # 2. 否則從循環影片中取 
             try:
                 frame = next(self.iterator)
             except (StopIteration, av.EOFError):

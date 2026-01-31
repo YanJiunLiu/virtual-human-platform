@@ -4,7 +4,8 @@ class ChatSerializer(serializers.Serializer):
     message = serializers.CharField(max_length=1000)    
 
 class AudioSerializer(serializers.Serializer):
-    audio_file = serializers.FileField()
+    patient_id = serializers.CharField(required=True)
+    audio_file = serializers.FileField(required=True)
 
 class WebRTCSerializer(serializers.Serializer):
     sdp = serializers.CharField(help_text="前端生成的 Offer SDP 字串")

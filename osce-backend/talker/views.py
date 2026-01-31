@@ -47,14 +47,12 @@ from talker.decorators import talker
     idle_video=extend_schema(
         description="Idle video.",
         request=VideoSerializer,
-        responses={201: {"type": "string"}},
-        exclude=True
+        responses={201: {"type": "string"}}
     ),
     add_video_to_streamer=extend_schema(
         description="Add video to streamer.",
         request=AudioSerializer,
-        responses={201: {"type": "string"}},
-        exclude=True
+        responses={201: {"type": "string"}}
     )
 )
 class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -73,7 +71,7 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         ollama_response = request.system.chat_ollama(text=clean_text, system_content="你是一位生了重病的病患,請依照發燒的症狀闡述自己的狀況") 
         response = request.system.clean_text_content(ollama_response)
         relative_audio_path = request.system.tts(response)
-        audio_url = request.build_absolute_uri(relative_audio_path)
+        # audio_url = request.build_absolute_uri(relative_audio_path)
         absolute_image_path = request.system.get_image_path(
             patient_id="1"
         )
@@ -88,6 +86,7 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         absolute_media_path = request.system.build_absolute_output_path(
             relative_output_path = relative_media_path
         )
+        print("absolute_media_path", absolute_media_path)
         request.system.add_video_to_streamer(
             video_path=absolute_media_path
         )
@@ -142,17 +141,18 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         image_base64 = serializer.validated_data.get("image_base64")
         patient_id = serializer.validated_data.get("patient_id")
         duration = serializer.validated_data.get("duration")
-        
-        image_path = request.system.save_base64_image(
-            base64_obj=image_base64, 
-            patient_id=patient_id
-        )
-        relative_path = request.system.generate_video(
-            image_path=image_path, 
-            duration=duration,
-            use_idle_mode=True
-        )
-        full_url = request.build_absolute_uri(relative_path)
+        relative_path=request.system.is_idle_video_exist(patient_id, duration)
+        if not relative_path:
+            image_path = request.system.save_base64_image(
+                base64_obj=image_base64, 
+                patient_id=patient_id
+            )
+            relative_path = request.system.generate_video(
+                image_path=image_path, 
+                duration=duration,
+                use_idle_mode=True
+            )
+        full_url = request.build_absolute_uri('/'+relative_path)
         return Response({
             "success": True,    
             "data": {
