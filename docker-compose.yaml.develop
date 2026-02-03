@@ -19,6 +19,7 @@ services:
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
+      - EXTERNAL_IP=192.168.1.100
     volumes:
       - ./osce-backend:/app/osce-backend
       - ./db:/app/osce-backend/db
@@ -33,6 +34,7 @@ services:
         "
     ports:
       - "8004:8000"
+      - "10000-10050:10000-10050/udp"
     networks:
       - app-network-develop
 
@@ -87,17 +89,12 @@ services:
 
   coturn:
     image: coturn/coturn:4.6.2
-    container_name: osce-coturn-dev
-    network_mode: "host"
-    command: 
-      - "-n"
-      - "--log-file=stdout"
-      - "--listening-port=3474"      
-      - "--min-port=49152"
-      - "--max-port=49160"
-      - "--realm=osce.local"
-      - "--user=admin:osce"
-      - "--lt-cred-mech"
-      - "--fingerprint"
-      - "--external-ip=192.168.1.4"  
-    restart: unless-stopped
+    container_name: osce-coturn
+    ports:
+      - "3478:3478/tcp"
+      - "3478:3478/udp"
+      - "49152-49160:49152-49160/udp"
+    volumes:
+      - ./development/coturn.conf:/etc/turnserver.conf:ro
+    network_mode: host
+    restart: always
