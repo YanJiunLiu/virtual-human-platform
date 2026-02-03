@@ -5,8 +5,12 @@ volumes:
   redis_data:
 
 networks:
+  # 鎖定網段，確保 IP 不會隨機變動
   app-network-develop:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
 
 services:
   backend:
@@ -19,7 +23,8 @@ services:
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
-      - EXTERNAL_IP=192.168.1.100
+      - EXTERNAL_IP=192.168.0.132
+      - OLLAMA_BASE_URL=http://ollama:11434
     volumes:
       - ./osce-backend:/app/osce-backend
       - ./db:/app/osce-backend/db
@@ -34,40 +39,48 @@ services:
         "
     ports:
       - "8004:8000"
+    networks:
+      app-network-develop:
+        ipv4_address: 172.20.0.3 # 鎖定後端 IP
+    # 確保後端能調用 GPU (若環境支援)
+    #deploy:
+    #  resources:
+    #    reservations:
+    #      devices:
+    #        - driver: nvidia
+    #          count: all
+    #          capabilities: [gpu]
+
+  coturn:
+    image: coturn/coturn:4.6.2
+    container_name: osce-coturn-dev
+    restart: unless-stopped
+    ports:
+      - "3478:3478"
+      - "3478:3478/udp"
       - "10000-10050:10000-10050/udp"
     networks:
-      - app-network-develop
-
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    volumes:
-      - ./osce-frontend:/app/osce-frontend
-      - ./dist:/app/osce-frontend/dist
-    command: >
-      bash -c " 
-            npm run build:admin && 
-            npm run build:user"
-    networks:
-      - app-network-develop
-
-  ollama:
-    image: ollama/ollama:0.5.7
-    container_name: osce-ollama-dev
-    ports:
-      - "11404:11434"
-    volumes:
-      - ./ollama:/root/.ollama
-    restart: unless-stopped
-    networks:
-      - app-network-develop
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:11404/api/tags" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      app-network-develop:
+        ipv4_address: 172.20.0.2 # 鎖定 CoTURN IP
+    command:
+      - turnserver
+      - -n
+      - --log-file=stdout
+      - --lt-cred-mech
+      - --fingerprint
+      - --realm=osce.local
+      - --user=osce:osce
+      - --listening-port=3478
+      - --min-port=10000
+      - --max-port=10050
+      - --verbose
+      # --- 關鍵修正：對應宿主機 IP 與容器內部靜態 IP ---
+      - --external-ip=192.168.0.132/172.20.0.2
+      - --relay-ip=172.20.0.2
+      - --listening-ip=0.0.0.0
+      - --allowed-peer-ip=0.0.0.0-255.255.255.255
+      - --allow-loopback-peers
+      - --no-cli
 
   nginx:
     image: nginx:1.27.3-alpine
@@ -85,16 +98,32 @@ services:
       - backend
       - frontend
     networks:
-      - app-network-develop
+      app-network-develop:
+        ipv4_address: 172.20.0.4
 
-  coturn:
-    image: coturn/coturn:4.6.2
-    container_name: osce-coturn
+  ollama:
+    image: ollama/ollama:0.5.7
+    container_name: osce-ollama-dev
     ports:
-      - "3478:3478/tcp"
-      - "3478:3478/udp"
-      - "49152-49160:49152-49160/udp"
+      - "11404:11434"
     volumes:
-      - ./development/coturn.conf:/etc/turnserver.conf:ro
-    network_mode: host
-    restart: always
+      - ./ollama:/root/.ollama
+    restart: unless-stopped
+    networks:
+      app-network-develop:
+        ipv4_address: 172.20.0.5
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    volumes:
+      - ./osce-frontend:/app/osce-frontend
+      - ./dist:/app/osce-frontend/dist
+    command: >
+      bash -c " 
+            npm run build:admin && 
+            npm run build:user"
+    networks:
+      app-network-develop:
+        ipv4_address: 172.20.0.6

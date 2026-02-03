@@ -286,3 +286,5 @@ os.makedirs(LINLY_TALKER_CONFIG_DIR, exist_ok=True)
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://192.168.0.46:11444/")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "alibayram/medgemma")
+
+EXTERNAL_IP = os.getenv("EXTERNAL_IP", "192.168.0.132")
