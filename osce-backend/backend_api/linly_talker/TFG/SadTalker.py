@@ -47,7 +47,8 @@ class SadTalker():
         ref_info = None,
         use_idle_mode = False,
         length_of_audio = 0, use_blink=True, fps = 20,
-        result_dir='./results/'):
+        result_dir='./results/',
+        result_dir_tag=None):
 
         os.makedirs(result_dir, exist_ok=True)
         self.sadtalker_paths = init_path(self.checkpoint_path, self.config_path, size, False, preprocess)
@@ -55,7 +56,11 @@ class SadTalker():
         self.audio_to_coeff = Audio2Coeff(self.sadtalker_paths, self.device)
         self.preprocess_model = CropAndExtract(self.sadtalker_paths, self.device)
 
-        time_tag = str(uuid.uuid4())
+        if result_dir_tag:
+            time_tag = result_dir_tag
+        else:
+            time_tag = str(uuid.uuid4())
+            
         save_dir = os.path.join(result_dir, time_tag)
         os.makedirs(save_dir, exist_ok=True)
 

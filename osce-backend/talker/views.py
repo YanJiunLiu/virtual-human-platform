@@ -150,7 +150,8 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             relative_path = request.system.generate_video(
                 image_path=image_path, 
                 duration=duration,
-                use_idle_mode=True
+                use_idle_mode=True,
+                patient_id=patient_id
             )
         full_url = request.build_absolute_uri('/'+relative_path)
         return Response({

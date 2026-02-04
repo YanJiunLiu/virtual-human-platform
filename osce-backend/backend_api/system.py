@@ -99,7 +99,7 @@ class WhisperSystem(BaseSystem):
         silent_audio_path = os.path.join(settings.AUDIO_DIR, f'silent_{timestamp}.wav')
         return silent_audio_path
 
-    def generate_video(self, image_path, duration=0, audio_path=None, use_idle_mode=False):
+    def generate_video(self, image_path, duration=0, audio_path=None, use_idle_mode=False, patient_id=None):
         linly_path = os.path.join(settings.BASE_DIR, 'backend_api/linly_talker')
         original_cwd = os.getcwd()
         os.chdir(linly_path)
@@ -134,7 +134,8 @@ class WhisperSystem(BaseSystem):
             use_idle_mode=use_idle_mode,
             length_of_audio=duration,
             use_blink=True,
-            result_dir=result_dir
+            result_dir=result_dir,
+            result_dir_tag=patient_id
         )
         
         os.chdir(original_cwd)
