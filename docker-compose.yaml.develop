@@ -119,12 +119,12 @@ services:
       dockerfile: Dockerfile.frontend
     volumes:
       - ./osce-frontend:/app/osce-frontend
+      - /app/osce-frontend/node_modules
       - ./dist:/app/osce-frontend/dist
     command: >
       bash -c " 
             npm run build:admin && 
-            npm run build:user &&
-            tail -f /dev/null"
+            npm run build:user"
     networks:
       app-network-develop:
         ipv4_address: 172.20.0.6
