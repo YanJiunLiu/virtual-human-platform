@@ -74,9 +74,8 @@ services:
       - --min-port=10000
       - --max-port=10050
       - --verbose
-      # --- 關鍵修正：對應宿主機 IP 與容器內部靜態 IP ---
-      - --external-ip=192.168.0.132/172.20.0.2
-      - --relay-ip=172.20.0.2
+      - --external-ip=192.168.0.46/172.20.0.4
+      - --relay-ip=172.20.0.4
       - --listening-ip=0.0.0.0
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
       - --allow-loopback-peers
