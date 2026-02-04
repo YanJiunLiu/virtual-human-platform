@@ -23,7 +23,7 @@ services:
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
-      - EXTERNAL_IP=192.168.0.132
+      - EXTERNAL_IP=192.168.0.46
       - OLLAMA_BASE_URL=http://ollama:11434
     volumes:
       - ./osce-backend:/app/osce-backend
@@ -74,8 +74,8 @@ services:
       - --min-port=10000
       - --max-port=10050
       - --verbose
-      - --external-ip=192.168.0.46/172.20.0.4
-      - --relay-ip=172.20.0.4
+      - --external-ip=192.168.0.46/172.20.0.2
+      - --relay-ip=172.20.0.2
       - --listening-ip=0.0.0.0
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
       - --allow-loopback-peers
