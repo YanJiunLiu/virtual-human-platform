@@ -123,7 +123,8 @@ services:
     command: >
       bash -c " 
             npm run build:admin && 
-            npm run build:user"
+            npm run build:user &&
+            tail -f /dev/null"
     networks:
       app-network-develop:
         ipv4_address: 172.20.0.6

@@ -11,5 +11,3 @@ RUN apt-get update && apt-get install -y \
 COPY ./osce-frontend /app/osce-frontend 
 WORKDIR /app/osce-frontend
 RUN npm install --force
-
-CMD ["tail", "-f", "/dev/null"]
