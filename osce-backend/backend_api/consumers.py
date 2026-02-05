@@ -73,29 +73,23 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
                     print(f"找不到音訊: {idle_audio_path}")
                     return
 
+                offer = RTCSessionDescription(sdp=data["sdp"], type="offer")
+                await self.pc.setRemoteDescription(offer)
+
                 video_track = VideoLoopTrack(idle_video_path)
                 audio_track = AudioLoopTrack(idle_audio_path)
-                self.pc.addTrack(video_track)
-                self.pc.addTrack(audio_track)
+                
+                for transceiver in self.pc.getTransceivers():
+                    if transceiver.kind == "video":
+                        transceiver.sender.replaceTrack(video_track)
+                        transceiver.direction = "sendonly"
+                    elif transceiver.kind == "audio":
+                        transceiver.sender.replaceTrack(audio_track)
+                        transceiver.direction = "sendonly"
+
                 video_stream_manager.register_track(self.patient_id, video_track)
                 audio_stream_manager.register_track(self.patient_id, audio_track)
                 
-                offer = RTCSessionDescription(sdp=data["sdp"], type="offer")
-                await self.pc.setRemoteDescription(offer)
-                
-                # for transceiver in self.pc.getTransceivers():
-                #     print(transceiver.kind)
-                #     if transceiver.kind == "video":
-                #         transceiver.direction = "sendonly"
-                #         try:
-                #             capabilities = RTCRtpReceiver.getCapabilities("video")
-                #             preferences = [c for c in capabilities.codecs if c.name == "VP8"]
-                #             if preferences:
-                #                 transceiver.setCodecPreferences(preferences)
-                #                 print("已鎖定 VP8 編碼偏好")
-                #         except Exception as e:
-                #             print(f"設定編碼偏好失敗: {e}")
-
                 answer = await self.pc.createAnswer()
                 await self.pc.setLocalDescription(answer)
                 

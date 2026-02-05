@@ -18,7 +18,7 @@ from drf_spectacular.utils import (
 
 from talker.serializers import (
     ChatSerializer,
-    AudioSerializer,
+    STTSerializer,
     VideoSerializer
 )
 from talker.decorators import talker
@@ -27,48 +27,36 @@ from talker.decorators import talker
 # Create your views here.
 @extend_schema(tags=["對話"])
 @extend_schema_view(
-    create=extend_schema(
-        description="Chat with LLM.",
-        request=AudioSerializer,
-        responses={201: {"type": "string"}},
-    ),
-    ask=extend_schema(
-        description="Ask LLM.",
+    ollama=extend_schema(
+        description="Chat with Ollama.",
         request=ChatSerializer,
         responses={201: {"type": "string"}},
-        exclude=True
     ),
     stt=extend_schema(
         description="STT with LLM.",
-        request=AudioSerializer,
-        responses={201: {"type": "string"}},
-        exclude=True
-    ),
-    idle_video=extend_schema(
-        description="Idle video.",
-        request=VideoSerializer,
+        request=STTSerializer,
         responses={201: {"type": "string"}}
     ),
-    add_video_to_streamer=extend_schema(
-        description="Add video to streamer.",
-        request=AudioSerializer,
+    idle_video=extend_schema(
+        description="Idle video with LLM.",
+        request=VideoSerializer,
         responses={201: {"type": "string"}}
     )
 )
-class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+class ChatViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
-    serializer_class = AudioSerializer
+    serializer_class = STTSerializer
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     @talker()
-    def create(self, request, *args, **kwargs):
+    @action(detail=False, methods=["post"], serializer_class=ChatSerializer)
+    def ollama(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        audio_obj = serializer.validated_data['audio_file']
-        system_content = serializer.validated_data['system_content']
         patient_id = serializer.validated_data['patient_id']
-        text = request.system.stt(audio_obj)
-        clean_text = request.system.clean_text_content(text)
+        message = serializer.validated_data['message']
+        system_content = serializer.validated_data['system_content']
+        clean_text = request.system.clean_text_content(message)
         request.system.chat_ollama(
             text=clean_text, 
             system_content=system_content,
@@ -80,25 +68,11 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 "message": "開始插播影片"
             }
         }, status=status.HTTP_200_OK)
-    
-    @action(detail=False, methods=["post"], serializer_class=ChatSerializer)
-    def ask(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        chat = ChatOllama(
-            base_url="http://192.168.0.46:11444/",
-            model="alibayram/medgemma",
-        )
-        
-        response = chat.invoke([HumanMessage(content=serializer.validated_data["message"])])
-        
-        return Response(response.content)
 
     @talker()
-    @action(detail=False, methods=["post"], serializer_class=AudioSerializer)
+    @action(detail=False, methods=["post"], serializer_class=ChatSerializer)
     def stt(self, request, *args, **kwargs):
-        serializer = AudioSerializer(data=request.data)
+        serializer = STTSerializer(data=request.data)
         
         if serializer.is_valid():
             audio_obj = serializer.validated_data['audio_file']
@@ -145,18 +119,6 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             }
         }, status=status.HTTP_200_OK)
     
-    @talker()
-    @action(detail=False, methods=["post"], serializer_class=AudioSerializer)
-    def add_video_to_streamer(self, request, *args, **kwargs):
-        request.system.add_video_to_streamer(
-            video_path="/Users/yanjiunliu/Workspace/itri/osce-csmu/osce-backend/media/videos/923c97b1-1525-4c00-bdcc-51a01d411988/1_audio_1769821832584_full.mp4"
-        )
-        return Response({
-            "success": True,    
-            "data": {
-                "message": "開始插播影片"
-            }
-        }, status=status.HTTP_200_OK)
     
 @extend_schema(exclude=True)
 class  TalkerSpectacularAPIView(SpectacularAPIView):

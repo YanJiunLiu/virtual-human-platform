@@ -186,7 +186,10 @@ class WhisperSystem(BaseSystem):
             return None
 
     def get_image_path(self, patient_id):
-        return os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
+        image_path = os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
+        if os.path.exists(image_path):
+            return image_path
+        assert False, "Please run idle_video first"
 
     def build_absolute_output_path(self, relative_output_path):
         clean_relative_path = relative_output_path.lstrip('/')
@@ -210,7 +213,6 @@ class WhisperSystem(BaseSystem):
         absolute_image_path = self.get_image_path(
             patient_id=patient_id
         )
-        assert os.path.exists(absolute_image_path), f"圖片不存在: {absolute_image_path}"
         chain = prompt | llm
         response = chain.invoke({"input": text})
         clean_response = self.clean_text_content(response.content)
