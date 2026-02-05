@@ -101,7 +101,7 @@ services:
         ipv4_address: 172.20.0.4
 
   ollama:
-    image: ollama/ollama:0.5.7
+    image: ollama/ollama:0.15.5-rc3
     container_name: osce-ollama-dev
     ports:
       - "11404:11434"
@@ -111,6 +111,14 @@ services:
     networks:
       app-network-develop:
         ipv4_address: 172.20.0.5
+    entrypoint: /bin/sh
+    command: 
+      - "-c"
+      - |
+        ollama serve & 
+        sleep 5
+        ollama run alibayram/medgemma "你好"
+        wait
 
   frontend:
     build:
