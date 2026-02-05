@@ -11,7 +11,7 @@ from faster_whisper import WhisperModel
 from langchain_ollama.chat_models import ChatOllama
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-from backend_api.connection_manager import stream_manager
+from backend_api.connection_manager import video_stream_manager, audio_stream_manager
 from asgiref.sync import async_to_sync
 from datetime import datetime
 
@@ -213,8 +213,9 @@ class WhisperSystem(BaseSystem):
         assert os.path.exists(absolute_image_path), f"圖片不存在: {absolute_image_path}"
         chain = prompt | llm
         response = chain.invoke({"input": text})
+        clean_response = self.clean_text_content(response.content)
         relative_audio_path = self.tts(
-            text=response.content, 
+            text=clean_response, 
             patient_id=patient_id
         )
         absolute_audio_path = self.build_absolute_output_path(
@@ -227,8 +228,9 @@ class WhisperSystem(BaseSystem):
         absolute_media_path = self.build_absolute_output_path(
             relative_output_path = relative_media_path
         )
-        self.add_video_to_streamer(
+        self.add_video_and_audio_to_streamer(
             video_path=absolute_media_path,
+            audio_path=absolute_audio_path,
             patient_id=patient_id
         )
         return response
@@ -248,9 +250,11 @@ class WhisperSystem(BaseSystem):
         text = text.strip()
         return text
 
-    def add_video_to_streamer(self, video_path, patient_id='1'):
-        current_track = stream_manager.get_track(patient_id)
-        async_to_sync(current_track.add_video_to_streamer)(video_path)
+    def add_video_and_audio_to_streamer(self, video_path, audio_path, patient_id='1'):
+        current_video_track = video_stream_manager.get_track(patient_id)
+        async_to_sync(current_video_track.add_video_to_streamer)(video_path)
+        current_audio_track = audio_stream_manager.get_track(patient_id)
+        async_to_sync(current_audio_track.add_audio_to_streamer)(audio_path)
 
     def is_idle_video_exist(self, patient_id: str, duration: int)->str:
         idle_video_path = os.path.join(settings.MEDIA_DIR, 'idle_videos', patient_id, f"{patient_id}_idlemode_{duration}_full.mp4")

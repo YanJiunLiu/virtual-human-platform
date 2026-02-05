@@ -13,4 +13,5 @@ class ConnectionManager:
     def get_track(self, user_id):
         return self.active_tracks.get(user_id)
 
-stream_manager = ConnectionManager()
+video_stream_manager = ConnectionManager()
+audio_stream_manager = ConnectionManager()

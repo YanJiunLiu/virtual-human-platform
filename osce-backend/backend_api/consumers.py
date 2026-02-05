@@ -12,8 +12,8 @@ from aiortc import (
     RTCConfiguration, 
     RTCRtpReceiver
 )
-from backend_api.streamer import VideoLoopTrack
-from backend_api.connection_manager import stream_manager
+from backend_api.streamer import VideoLoopTrack, AudioLoopTrack
+from backend_api.connection_manager import video_stream_manager, audio_stream_manager
 
 class WebRTCConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -22,13 +22,10 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         self.patient_id = params.get('patient_id', [None])[0]
         self.duration = params.get('duration', [None])[0]
         
-        # 取得設定的外部 IP
         self.external_ip = getattr(settings, 'EXTERNAL_IP', '192.168.0.46')
 
         await self.accept()
 
-        # --- 關鍵修正：配置 ICE Server ---
-        # 讓 aiortc 知道要去哪裡進行 TURN 轉發，這樣它會自動生成正確的 Relay Candidate
         ice_servers = [
             RTCIceServer(
                 urls=[f"turn:{self.external_ip}:3478"],
@@ -58,50 +55,54 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
             message_type = data.get("type")
             
             if message_type == "offer":
-                # 1. 檢查影片檔案
                 idle_video_path = os.path.join(
                     settings.MEDIA_DIR, "idle_videos", self.patient_id, 
                     f"{self.patient_id}_idlemode_{self.duration}_full.mp4"
                 )
+                # idle_video_path = "/Users/yanjiunliu/Workspace/itri/osce-csmu/osce-backend/media/videos/17be6eb5-6122-4ed8-8618-12f26444d25d/1_audio_1770274842821_full.mp4"
+                idle_audio_path = os.path.join(
+                    settings.MEDIA_DIR, "idle_videos", self.patient_id,
+                    "input",f"idlemode_{self.duration}.wav" 
+                )   
+                # idle_audio_path = "/Users/yanjiunliu/Workspace/itri/osce-csmu/osce-backend/media/audios/2026_02_05/1/audio_1770274842821.wav"
                 
                 if not os.path.exists(idle_video_path):
                     print(f"找不到影片: {idle_video_path}")
                     return
+                if not os.path.exists(idle_audio_path):
+                    print(f"找不到音訊: {idle_audio_path}")
+                    return
 
-                # 準備軌道
                 video_track = VideoLoopTrack(idle_video_path)
+                audio_track = AudioLoopTrack(idle_audio_path)
                 self.pc.addTrack(video_track)
-                stream_manager.register_track(self.patient_id, video_track)
+                self.pc.addTrack(audio_track)
+                video_stream_manager.register_track(self.patient_id, video_track)
+                audio_stream_manager.register_track(self.patient_id, audio_track)
                 
-                # 2. 處理遠端 Offer
                 offer = RTCSessionDescription(sdp=data["sdp"], type="offer")
                 await self.pc.setRemoteDescription(offer)
                 
-                # 3. 設定 Transceiver (鎖定 VP8)
-                for transceiver in self.pc.getTransceivers():
-                    if transceiver.kind == "video":
-                        transceiver.direction = "sendonly"
-                        try:
-                            capabilities = RTCRtpReceiver.getCapabilities("video")
-                            preferences = [c for c in capabilities.codecs if c.name == "VP8"]
-                            if preferences:
-                                transceiver.setCodecPreferences(preferences)
-                                print("已鎖定 VP8 編碼偏好")
-                        except Exception as e:
-                            print(f"設定編碼偏好失敗: {e}")
+                # for transceiver in self.pc.getTransceivers():
+                #     print(transceiver.kind)
+                #     if transceiver.kind == "video":
+                #         transceiver.direction = "sendonly"
+                #         try:
+                #             capabilities = RTCRtpReceiver.getCapabilities("video")
+                #             preferences = [c for c in capabilities.codecs if c.name == "VP8"]
+                #             if preferences:
+                #                 transceiver.setCodecPreferences(preferences)
+                #                 print("已鎖定 VP8 編碼偏好")
+                #         except Exception as e:
+                #             print(f"設定編碼偏好失敗: {e}")
 
-                # 4. 產生 Answer
-                # aiortc 會因為 configuration 裡有 iceServers 而自動進行 ICE Gathering
                 answer = await self.pc.createAnswer()
                 await self.pc.setLocalDescription(answer)
                 
-                # --- 關鍵修正：不再手動修改 SDP ---
-                # 直接發送由 aiortc 採集完畢後的 SDP
                 await self.send(text_data=json.dumps({
                     "type": "answer",
                     "sdp": self.pc.localDescription.sdp
                 }))
-                print(f"Answer 已發送，包含自動採集的 ICE Candidates")
 
         except Exception as e:
             print(f"Receive Error: {e}")
