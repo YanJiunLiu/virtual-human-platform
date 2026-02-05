@@ -13,6 +13,7 @@ from aiortc import (
     RTCRtpReceiver
 )
 from backend_api.streamer import VideoLoopTrack
+from backend_api.connection_manager import stream_manager
 
 class WebRTCConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -22,7 +23,7 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         self.duration = params.get('duration', [None])[0]
         
         # 取得設定的外部 IP
-        self.external_ip = getattr(settings, 'EXTERNAL_IP', '192.168.0.132')
+        self.external_ip = getattr(settings, 'EXTERNAL_IP', '192.168.0.46')
 
         await self.accept()
 
@@ -70,7 +71,8 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
                 # 準備軌道
                 video_track = VideoLoopTrack(idle_video_path)
                 self.pc.addTrack(video_track)
-
+                stream_manager.register_track(self.patient_id, video_track)
+                
                 # 2. 處理遠端 Offer
                 offer = RTCSessionDescription(sdp=data["sdp"], type="offer")
                 await self.pc.setRemoteDescription(offer)

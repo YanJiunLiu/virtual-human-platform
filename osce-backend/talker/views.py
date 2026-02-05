@@ -64,32 +64,16 @@ class ChatViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
         audio_obj = serializer.validated_data['audio_file']
+        system_content = serializer.validated_data['system_content']
+        patient_id = serializer.validated_data['patient_id']
         text = request.system.stt(audio_obj)
         clean_text = request.system.clean_text_content(text)
-        ollama_response = request.system.chat_ollama(text=clean_text, system_content="你是一位生了重病的病患,請依照發燒的症狀闡述自己的狀況") 
-        response = request.system.clean_text_content(ollama_response)
-        relative_audio_path = request.system.tts(response)
-        # audio_url = request.build_absolute_uri(relative_audio_path)
-        absolute_image_path = request.system.get_image_path(
-            patient_id="1"
-        )
-        print("absolute_image_path", absolute_image_path)
-        absolute_audio_path = request.system.build_absolute_output_path(
-            relative_output_path = relative_audio_path
-        )
-        relative_media_path = request.system.generate_video(
-            image_path=absolute_image_path,
-            audio_path=absolute_audio_path
-        )
-        absolute_media_path = request.system.build_absolute_output_path(
-            relative_output_path = relative_media_path
-        )
-        print("absolute_media_path", absolute_media_path)
-        request.system.add_video_to_streamer(
-            video_path=absolute_media_path
-        )
+        request.system.chat_ollama(
+            text=clean_text, 
+            system_content=system_content,
+            patient_id=patient_id
+        ) 
         return Response({
             "success": True,    
             "data": {

@@ -6,6 +6,7 @@ class ChatSerializer(serializers.Serializer):
 class AudioSerializer(serializers.Serializer):
     patient_id = serializers.CharField(required=True)
     audio_file = serializers.FileField(required=True)
+    system_content = serializers.CharField(required=False, default="你是一位生了重病的病患,請依照發燒的症狀闡述自己的狀況")
 
 class WebRTCSerializer(serializers.Serializer):
     sdp = serializers.CharField(help_text="前端生成的 Offer SDP 字串")

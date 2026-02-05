@@ -284,7 +284,7 @@ os.makedirs(LINLY_TALKER_CHECKPOINTS_DIR, exist_ok=True)
 LINLY_TALKER_CONFIG_DIR = os.getenv("LINLY_TALKER_CONFIG_DIR", os.path.join(BASE_DIR, 'backend_api/linly_talker/src/config'))
 os.makedirs(LINLY_TALKER_CONFIG_DIR, exist_ok=True)
 
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://192.168.0.46:11444/")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://192.168.0.46:11404/")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "alibayram/medgemma")
 
-EXTERNAL_IP = os.getenv("EXTERNAL_IP", "192.168.0.132")
+EXTERNAL_IP = os.getenv("EXTERNAL_IP", "192.168.0.46")

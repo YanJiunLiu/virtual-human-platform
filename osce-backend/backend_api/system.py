@@ -13,6 +13,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from backend_api.connection_manager import stream_manager
 from asgiref.sync import async_to_sync
+from datetime import datetime
 
 class BaseSystem:
     def __init__(self,request):
@@ -63,9 +64,17 @@ class WhisperSystem(BaseSystem):
         except:
             return 0
 
-    def tts(self, text):
+    @staticmethod
+    def generate_audio_patient_path(patient_id):
         timestamp = int(time.time() * 1000)
-        output_audio_path = os.path.join(settings.AUDIO_DIR, f'audio_{timestamp}.wav')
+        date_str = datetime.now().strftime('%Y_%m_%d')
+        output_audio_dir = os.path.join(settings.AUDIO_DIR, date_str, patient_id)
+        os.makedirs(output_audio_dir, exist_ok=True)
+        output_audio_path = os.path.join(output_audio_dir, f'audio_{timestamp}.wav')
+        return output_audio_path
+
+    def tts(self, text, patient_id='Unknown'):
+        output_audio_path = self.generate_audio_patient_path(patient_id)
         linly_path = os.path.join(settings.BASE_DIR, 'backend_api/linly_talker')
         original_cwd = os.getcwd()
         os.chdir(linly_path)
@@ -91,6 +100,7 @@ class WhisperSystem(BaseSystem):
         os.chdir(original_cwd)
         relative_path = os.path.relpath(output_audio_path, settings.MEDIA_DIR)
         audio_url = os.path.join(settings.MEDIA_URL, relative_path)
+        print(audio_url)
         return audio_url
     
     @staticmethod
@@ -181,21 +191,50 @@ class WhisperSystem(BaseSystem):
     def build_absolute_output_path(self, relative_output_path):
         clean_relative_path = relative_output_path.lstrip('/')
         return os.path.join(settings.OUTPUT_ROOT_DIR, clean_relative_path)
+    
+    @staticmethod
+    def is_punct_re(char):
+        return bool(re.match(r'[^\w\s]', char))
 
-    def chat_ollama(self, text, system_content="你是一位病患"):
+    def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
         llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
+            temperature=0.3,
+            num_predict=20
         )
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_content),
             ("human", "{input}"),
         ])
+        absolute_image_path = self.get_image_path(
+            patient_id=patient_id
+        )
+        assert os.path.exists(absolute_image_path), f"圖片不存在: {absolute_image_path}"
         chain = prompt | llm
         response = chain.invoke({"input": text})
-        return response.content
+        relative_audio_path = self.tts(
+            text=response.content, 
+            patient_id=patient_id
+        )
+        absolute_audio_path = self.build_absolute_output_path(
+            relative_output_path = relative_audio_path
+        )
+        relative_media_path = self.generate_video(
+            image_path=absolute_image_path,
+            audio_path=absolute_audio_path,
+        )
+        absolute_media_path = self.build_absolute_output_path(
+            relative_output_path = relative_media_path
+        )
+        self.add_video_to_streamer(
+            video_path=absolute_media_path,
+            patient_id=patient_id
+        )
+        return response
 
-    def clean_text_content(self, text: str) -> str:
+    @staticmethod
+    def clean_text_content(text: str) -> str:
         text = re.sub(r'\*+', '', text)
         text = re.sub(r'#+\s*', '', text)
         text = re.sub(r'`+', '', text)
