@@ -205,7 +205,7 @@ class WhisperSystem(BaseSystem):
             openai_api_base=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
             temperature=0.3,
-            num_predict=20
+            max_tokens=20
         )
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_content),
