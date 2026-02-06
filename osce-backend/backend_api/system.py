@@ -200,13 +200,18 @@ class WhisperSystem(BaseSystem):
         return bool(re.match(r'[^\w\s]', char)) 
 
     def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
+        rules = """
+        規則：
+            1. 嚴禁提及你是 AI 或語言模型。
+            2. 只能回答體感、病徵。
+        """
         llm = ChatOpenAI(
-            openai_api_key="ollama",
-            openai_api_base=settings.OLLAMA_BASE_URL,
+            api_key="ollama",
+            base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
-            temperature=0.3,
-            max_tokens=20
+            temperature=0.9
         )
+        system_content+=rules
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_content),
             ("human", "{input}"),
@@ -214,7 +219,10 @@ class WhisperSystem(BaseSystem):
         absolute_image_path = self.get_image_path(
             patient_id=patient_id
         )
-        chain = prompt | llm
+        chain = prompt | llm.bind(
+            stop=["。", "\n", "！"], 
+            max_tokens=20
+        )
         response = chain.invoke({"input": text})
         clean_response = self.clean_text_content(response.content)
         relative_audio_path = self.tts(
@@ -236,7 +244,7 @@ class WhisperSystem(BaseSystem):
             audio_path=absolute_audio_path,
             patient_id=patient_id
         )
-        return response
+        return clean_response
 
     @staticmethod
     def clean_text_content(text: str) -> str:
