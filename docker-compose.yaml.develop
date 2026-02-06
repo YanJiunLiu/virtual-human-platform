@@ -30,6 +30,7 @@ services:
       - ./db:/app/osce-backend/db
       - ./log:/app/osce-backend/log
       - ./osce-backend/media:/app/osce-backend/media
+      - ./model:/app/osce-backend/backend_api/models
     working_dir: /app/osce-backend
     command: >
       bash -c "
