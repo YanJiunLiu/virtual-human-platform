@@ -57,7 +57,7 @@ class ChatViewSet(viewsets.GenericViewSet):
         message = serializer.validated_data['message']
         system_content = serializer.validated_data['system_content']
         clean_text = request.system.clean_text_content(message)
-        request.system.chat_ollama(
+        response_text = request.system.chat_ollama(
             text=clean_text, 
             system_content=system_content,
             patient_id=patient_id
@@ -65,7 +65,7 @@ class ChatViewSet(viewsets.GenericViewSet):
         return Response({
             "success": True,    
             "data": {
-                "message": "開始插播影片"
+                "text": response_text
             }
         }, status=status.HTTP_200_OK)
 
