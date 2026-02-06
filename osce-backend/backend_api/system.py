@@ -200,6 +200,7 @@ class WhisperSystem(BaseSystem):
         return bool(re.match(r'[^\w\s]', char))
 
     def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
+        print(settings.OLLAMA_BASE_URL)
         llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
