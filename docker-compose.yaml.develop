@@ -43,7 +43,6 @@ services:
     networks:
       app-network-develop:
         ipv4_address: 172.20.0.3 # 鎖定後端 IP
-    # 確保後端能調用 GPU (若環境支援)
     deploy:
       resources:
         reservations:
@@ -104,6 +103,8 @@ services:
   ollama:
     image: ollama/ollama:0.15.5-rc3
     container_name: osce-ollama-dev
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
     ports:
       - "11404:11434"
     volumes:
