@@ -9,6 +9,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from faster_whisper import WhisperModel
 from langchain_ollama.chat_models import ChatOllama
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from backend_api.connection_manager import video_stream_manager, audio_stream_manager
@@ -200,53 +201,43 @@ class WhisperSystem(BaseSystem):
         return bool(re.match(r'[^\w\s]', char)) 
 
     def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
-        try:
-            print("settings.OLLAMA_BASE_URL: ", settings.OLLAMA_BASE_URL)
-            print("settings.OLLAMA_MODEL: ", settings.OLLAMA_MODEL)
-            llm = ChatOllama(
-                base_url=settings.OLLAMA_BASE_URL,
-                model=settings.OLLAMA_MODEL,
-                temperature=0.3,
-                num_predict=20
-            )
-            print("llm: ", llm)
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", system_content),
-                ("human", "{input}"),
-            ])
-            print("prompt: ", prompt)
-            absolute_image_path = self.get_image_path(
-                patient_id=patient_id
-            )
-            print("absolute_image_path: ", absolute_image_path)
-            chain = prompt | llm
-            print("chain: ", chain)
-            response = chain.invoke({"input": text})
-            print("response: ", response)
-            clean_response = self.clean_text_content(response.content)
-            relative_audio_path = self.tts(
-                text=clean_response, 
-                patient_id=patient_id
-            )
-            absolute_audio_path = self.build_absolute_output_path(
-                relative_output_path = relative_audio_path
-            )
-            relative_media_path = self.generate_video(
-                image_path=absolute_image_path,
-                audio_path=absolute_audio_path,
-            )
-            absolute_media_path = self.build_absolute_output_path(
-                relative_output_path = relative_media_path
-            )
-            self.add_video_and_audio_to_streamer(
-                video_path=absolute_media_path,
-                audio_path=absolute_audio_path,
-                patient_id=patient_id
-            )
-            return response
-        except Exception as e:
-            print(f"Chat Ollama 失敗: {str(e)}")
-            return None
+        llm = ChatOpenAI(
+            openai_api_key="ollama",
+            openai_api_base=settings.OLLAMA_BASE_URL,
+            model=settings.OLLAMA_MODEL,
+            temperature=0.3,
+            num_predict=20
+        )
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_content),
+            ("human", "{input}"),
+        ])
+        absolute_image_path = self.get_image_path(
+            patient_id=patient_id
+        )
+        chain = prompt | llm
+        response = chain.invoke({"input": text})
+        clean_response = self.clean_text_content(response.content)
+        relative_audio_path = self.tts(
+            text=clean_response, 
+            patient_id=patient_id
+        )
+        absolute_audio_path = self.build_absolute_output_path(
+            relative_output_path = relative_audio_path
+        )
+        relative_media_path = self.generate_video(
+            image_path=absolute_image_path,
+            audio_path=absolute_audio_path,
+        )
+        absolute_media_path = self.build_absolute_output_path(
+            relative_output_path = relative_media_path
+        )
+        self.add_video_and_audio_to_streamer(
+            video_path=absolute_media_path,
+            audio_path=absolute_audio_path,
+            patient_id=patient_id
+        )
+        return response
 
     @staticmethod
     def clean_text_content(text: str) -> str:
