@@ -223,6 +223,9 @@ class WhisperSystem(BaseSystem):
         llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
+            client_kwargs={
+                "trust_env": False,
+            },
             temperature=0.3,
             num_predict=20
         )
