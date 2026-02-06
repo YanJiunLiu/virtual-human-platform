@@ -213,7 +213,7 @@ class WhisperSystem(BaseSystem):
 
         # 測試 2: Requests 連線
         try:
-            r = requests.get("http://osce-ollama-dev:11434/api/tags", timeout=5)
+            r = requests.get(f"{settings.OLLAMA_BASE_URL}/api/tags", timeout=5)
             print(f"Requests Check: Success, status {r.status_code}")
         except Exception as e:
             print(f"Requests Check FAILED: {e}")    
