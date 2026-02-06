@@ -220,10 +220,12 @@ class WhisperSystem(BaseSystem):
 
     def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
         self.test_ollama()
+        transport = httpx.HTTPTransport(local_address="0.0.0.0")
         llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
             client_kwargs={
+                "transport": transport,
                 "trust_env": False,
             },
             temperature=0.3,
