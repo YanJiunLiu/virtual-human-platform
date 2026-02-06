@@ -104,7 +104,7 @@ services:
     image: ollama/ollama:0.15.5-rc3
     container_name: osce-ollama-dev
     environment:
-      - OLLAMA_HOST=0.0.0.0:11434
+      - OLLAMA_HOST=0.0.0.0
     ports:
       - "11404:11434"
     volumes:
@@ -113,14 +113,7 @@ services:
     networks:
       app-network-develop:
         ipv4_address: 172.20.0.5
-    entrypoint: /bin/sh
-    command: 
-      - "-c"
-      - |
-        ollama serve & 
-        sleep 5
-        ollama run alibayram/medgemma "你好"
-        wait
+    entrypoint: ["/usr/bin/ollama", "serve"]
 
   frontend:
     build:
