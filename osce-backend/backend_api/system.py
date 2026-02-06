@@ -8,7 +8,6 @@ from yarl import URL
 from django.conf import settings
 from django.conf.urls.static import static
 from faster_whisper import WhisperModel
-from langchain_ollama.chat_models import ChatOllama
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
