@@ -199,10 +199,27 @@ class WhisperSystem(BaseSystem):
     def is_punct_re(char):
         return bool(re.match(r'[^\w\s]', char))
 
-    def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
+
+    def test_ollama(self):
         print(f"DEBUG PROXY: {os.environ.get('http_proxy')}")
         print(f"DEBUG PROXY: {os.environ.get('no_proxy')}")
-        print(settings.OLLAMA_BASE_URL)
+        import socket
+        import requests
+        try:
+            ip = socket.gethostbyname('osce-ollama-dev')
+            print(f"DNS Check: osce-ollama-dev resolved to {ip}")
+        except Exception as e:
+            print(f"DNS Check FAILED: {e}")
+
+        # 測試 2: Requests 連線
+        try:
+            r = requests.get("http://osce-ollama-dev:11434/api/tags", timeout=5)
+            print(f"Requests Check: Success, status {r.status_code}")
+        except Exception as e:
+            print(f"Requests Check FAILED: {e}")    
+
+    def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
+        self.test_ollama()
         llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
