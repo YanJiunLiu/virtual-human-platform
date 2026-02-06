@@ -221,6 +221,8 @@ class WhisperSystem(BaseSystem):
 
     def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
         self.test_ollama()
+        print("settings.OLLAMA_BASE_URL: ", settings.OLLAMA_BASE_URL)
+        print("settings.OLLAMA_MODEL: ", settings.OLLAMA_MODEL)
         llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
@@ -230,6 +232,7 @@ class WhisperSystem(BaseSystem):
             temperature=0.3,
             num_predict=20
         )
+        print("llm: ", llm)
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_content),
             ("human", "{input}"),

@@ -50,6 +50,9 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    depends_on:
+      ollama:
+        condition: service_started
 
   coturn:
     image: coturn/coturn:4.6.2
