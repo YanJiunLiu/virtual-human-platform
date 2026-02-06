@@ -4,7 +4,6 @@ import sys
 import time
 import base64
 import re
-import httpx
 from yarl import URL
 from django.conf import settings
 from django.conf.urls.static import static
@@ -198,49 +197,14 @@ class WhisperSystem(BaseSystem):
     
     @staticmethod
     def is_punct_re(char):
-        return bool(re.match(r'[^\w\s]', char))
-
-
-    def test_ollama(self):
-        print(f"DEBUG PROXY: {os.environ.get('http_proxy')}")
-        print(f"DEBUG PROXY: {os.environ.get('no_proxy')}")
-        import socket
-        import requests
-        try:
-            ip = socket.gethostbyname('osce-ollama-dev')
-            print(f"DNS Check: osce-ollama-dev resolved to {ip}")
-        except Exception as e:
-            print(f"DNS Check FAILED: {e}")
-
-        # 測試 2: Requests 連線
-        try:
-            r = requests.get(f"{settings.OLLAMA_BASE_URL}/api/tags", timeout=5)
-            print(f"Requests Check: Success, status {r.status_code}")
-        except Exception as e:
-            print(f"Requests Check FAILED: {e}")    
+        return bool(re.match(r'[^\w\s]', char)) 
 
     def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
-        self.test_ollama()
         print("settings.OLLAMA_BASE_URL: ", settings.OLLAMA_BASE_URL)
         print("settings.OLLAMA_MODEL: ", settings.OLLAMA_MODEL)
-        # 建立一個完全不看環境變數、不看 Proxy 的 Transport
-        transport = httpx.HTTPTransport(
-            proxy=None,
-            trust_env=False
-        )
-
-        # 使用這個 Transport 建立 Client
-        client = httpx.Client(
-            transport=transport,
-            trust_env=False,
-            timeout=httpx.Timeout(60.0) # 給 LLM 稍微長一點的時間
-        )
         llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
-            client_kwargs={
-                "client": client,
-            },
             temperature=0.3,
             num_predict=20
         )
@@ -249,10 +213,13 @@ class WhisperSystem(BaseSystem):
             ("system", system_content),
             ("human", "{input}"),
         ])
+        print("prompt: ", prompt)
         absolute_image_path = self.get_image_path(
             patient_id=patient_id
         )
+        print("absolute_image_path: ", absolute_image_path)
         chain = prompt | llm
+        print("chain: ", chain)
         response = chain.invoke({"input": text})
         clean_response = self.clean_text_content(response.content)
         relative_audio_path = self.tts(
