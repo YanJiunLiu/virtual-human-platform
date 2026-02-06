@@ -223,9 +223,16 @@ class WhisperSystem(BaseSystem):
         self.test_ollama()
         print("settings.OLLAMA_BASE_URL: ", settings.OLLAMA_BASE_URL)
         print("settings.OLLAMA_MODEL: ", settings.OLLAMA_MODEL)
+        client = httpx.Client(
+            timeout=httpx.Timeout(30.0),
+            follow_redirects=True,
+        )
         llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
+            client_kwargs={
+                "client": client, # 直接注入我們建立的基礎 client
+            },
             temperature=0.3,
             num_predict=20
         )
