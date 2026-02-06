@@ -223,9 +223,24 @@ class WhisperSystem(BaseSystem):
         self.test_ollama()
         print("settings.OLLAMA_BASE_URL: ", settings.OLLAMA_BASE_URL)
         print("settings.OLLAMA_MODEL: ", settings.OLLAMA_MODEL)
+        # 建立一個完全不看環境變數、不看 Proxy 的 Transport
+        transport = httpx.HTTPTransport(
+            proxy=None,
+            trust_env=False
+        )
+
+        # 使用這個 Transport 建立 Client
+        client = httpx.Client(
+            transport=transport,
+            trust_env=False,
+            timeout=httpx.Timeout(60.0) # 給 LLM 稍微長一點的時間
+        )
         llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL,
+            client_kwargs={
+                "client": client,
+            },
             temperature=0.3,
             num_predict=20
         )
