@@ -23,14 +23,16 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         self.duration = params.get('duration', [None])[0]
         
         self.external_ip = getattr(settings, 'EXTERNAL_IP', '192.168.0.46')
-
+        self.turn_port = getattr(settings, 'TURN_PORT', '3478')
+        self.turn_username = getattr(settings, 'TURN_USERNAME', 'osce')
+        self.turn_credential = getattr(settings, 'TURN_CREDENTIAL', 'osce')
         await self.accept()
 
         ice_servers = [
             RTCIceServer(
-                urls=[f"turn:{self.external_ip}:3478"],
-                username="osce",
-                credential="osce"
+                urls=[f"turn:{self.external_ip}:{self.turn_port}"],
+                username=self.turn_username,
+                credential=self.turn_credential
             )
         ]
         config = RTCConfiguration(iceServers=ice_servers)
