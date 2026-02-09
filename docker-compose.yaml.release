@@ -24,7 +24,7 @@ services:
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
       - EXTERNAL_IP=${HOST_IP}
-      - OLLAMA_BASE_URL=http://${HOST_IP}:11404/v1
+      - OLLAMA_BASE_URL=http://${HOST_IP}:11400/v1
     volumes:
       - ./osce-backend:/app/osce-backend
       - ./mount/db:/app/osce-backend/db
@@ -36,10 +36,10 @@ services:
       bash -c "
         python3.13 manage.py collectstatic --noinput --settings=backend_api.settings 
         python3.13 manage.py makemigrations &&  python3.13 manage.py migrate --noinput
-        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8004 --workers 1 --timeout-keep-alive 300
+        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8010 --workers 1 --timeout-keep-alive 300
         "
     ports:
-      - "8004:8000"
+      - "8010:8010"
     networks:
       app-network-release:
         ipv4_address: 172.20.2.3 # 鎖定後端 IP
@@ -77,7 +77,7 @@ services:
       - --min-port=10000
       - --max-port=10050
       - --verbose
-      - --external-ip=192.168.0.46/172.20.2.2
+      - --external-ip=${HOST_IP}/172.20.2.2
       - --relay-ip=172.20.2.2
       - --listening-ip=0.0.0.0
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
@@ -109,7 +109,7 @@ services:
     environment:
       - OLLAMA_HOST=0.0.0.0
     ports:
-      - "11404:11434"
+      - "11400:11434"
     volumes:
       - ./ollama:/root/.ollama
     restart: unless-stopped
