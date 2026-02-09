@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  ollama:
+    build: .
+    container_name: ollama_server
+    ports:
+      - "8000:8000"
+    volumes:
+      - /usr/share/ollama/.ollama:/usr/share/ollama/.ollama
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    container_name: ollama_nginx
+    ports:
+      - "12003:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./fullchain.pem:/etc/nginx/certs/fullchain.pem:ro
+      - ./privkey.pem:/etc/nginx/certs/privkey.pem:ro
+
+    depends_on:
+      - ollama
+    restart: unless-stopped 
