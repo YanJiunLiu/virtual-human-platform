@@ -94,6 +94,7 @@ class ChatViewSet(viewsets.GenericViewSet):
     @talker()
     @action(detail=False, methods=["post"], serializer_class=VideoSerializer)
     def idle_video(self, request, *args, **kwargs):
+        print(request.data)
         serializer = VideoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         image_base64 = serializer.validated_data.get("image_base64")
