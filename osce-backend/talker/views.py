@@ -101,8 +101,10 @@ class ChatViewSet(viewsets.GenericViewSet):
         patient_id = serializer.validated_data.get("patient_id")
         duration = serializer.validated_data.get("duration")
         # 在這裡才處理檔案轉換
-        image_content_file = None
+        image_base64 = None
         if img_str:
+            import base64
+            from django.core.files.base import ContentFile
             try:
                 decoded_data = base64.b64decode(img_str)
                 image_base64 = ContentFile(decoded_data, name=f'{patient_id}_upload.jpg')
