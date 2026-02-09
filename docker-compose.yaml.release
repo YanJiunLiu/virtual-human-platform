@@ -59,7 +59,7 @@ services:
 
   coturn:
     image: coturn/coturn:4.6.2
-    container_name: osce-coturn-dev
+    container_name: osce-coturn-release
     restart: unless-stopped
     ports:
       - "3478:3478"
