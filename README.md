@@ -59,8 +59,17 @@ http://localhost:8085/mgmt/schema/swagger-ui/
 
 **非 Mac:**
 ```bash
-docker-compose -f docker-compose.yaml.develop up --build backend
+STEP1. cd osce-backend
+STEP2. echo "HOST_IP=$(ipconfig getifaddr en0)" > .env
+STEP2. docker-compose -f docker-compose.yaml.develop build
+STEP3. docker-compose -f docker-compose.yaml.develop up -d
+STEP4(關閉使用). docker-compose -f docker-compose.yaml.develop down
 ```
+
+#### 測試用網址：
+http://192.168.41.20:8084/talker/schema/swagger-ui/
+http://192.168.41.20:8084/osce/schema/swagger-ui/
+http://192.168.41.20:8084/mgmt/schema/swagger-ui/
 
 > **注意**：`backend` 服務相依於 `ollama`，Docker Compose 會自動啟動必要的相依服務。
 
