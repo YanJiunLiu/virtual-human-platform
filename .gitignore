@@ -57,3 +57,6 @@ db/
 
 # test
 test.html
+
+# ollama
+ollama/
