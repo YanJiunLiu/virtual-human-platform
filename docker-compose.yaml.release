@@ -17,7 +17,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    container_name: osce-backend-dev
+    container_name: osce-backend-release
     environment:
       - PYTHONPATH=/app/osce-backend
       - DJANGO_DEBUG=False
@@ -89,7 +89,7 @@ services:
 
   nginx:
     image: nginx:1.27.3-alpine
-    container_name: osce-nginx-dev
+    container_name: osce-nginx-release
     ports:
       - "12001:80"
       - "12000:443"
@@ -108,7 +108,7 @@ services:
 
   ollama:
     image: ollama/ollama:0.15.5-rc3
-    container_name: osce-ollama-dev
+    container_name: osce-ollama-release
     environment:
       - OLLAMA_HOST=0.0.0.0
     ports:

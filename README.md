@@ -15,12 +15,14 @@ STEP2. echo "HOST_IP=$(ipconfig getifaddr en0)" > .env
 STEP3. docker-compose -f docker-compose.yaml.develop.macOS up  -d 
 
 STEP4. docker-compose -f docker-compose.yaml.develop.macOS down
-```
 
 ### 2-2. 非 Mac 版本
 適用於 Linux 使用者。
 
-```bash
+STEP1. check models and checkpoints
+## git clone https://huggingface.co/kidd1214/whisper-v3-ct2
+## git clone https://huggingface.co/kidd1214/linly_talker_checkpoints
+
 STEP1. docker-compose -f docker-compose.yaml.develop build
 
 STEP2. echo "HOST_IP=$(hostname -I | awk '{print $1}')" > .env
