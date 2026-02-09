@@ -91,7 +91,7 @@ services:
       - "12001:80"
       - "12004:443"
     volumes:
-      - ./nginx.conf.develop:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.conf.release:/etc/nginx/conf.d/default.conf:ro
       - ./mount/dist:/usr/share/nginx/html
       - ./mount/static:/app/osce-backend/static
       - ./fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
