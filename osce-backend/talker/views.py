@@ -96,26 +96,17 @@ class ChatViewSet(viewsets.GenericViewSet):
     def idle_video(self, request, *args, **kwargs):
         serializer = VideoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        img_str = serializer.validated_data.get("image_base64")
+        image_base64 = serializer.validated_data.get("image_base64")
         patient_id = serializer.validated_data.get("patient_id")
         duration = serializer.validated_data.get("duration")
         
         print("在這裡才處理檔案轉換")
-        image_base64 = None
-        if img_str:
-            import base64
-            from django.core.files.base import ContentFile
-            try:
-                decoded_data = base64.b64decode(img_str)
-                image_base64 = ContentFile(decoded_data, name=f'{patient_id}_upload.jpg')
-            except Exception as e:
-                return Response({"error": f"Base64 轉碼失敗: {str(e)}"}, status=400)
-        
+    
         relative_path=request.system.is_idle_video_exist(patient_id, duration)
         print("relative_path", relative_path)
         if not relative_path:
             image_path = request.system.save_base64_image(
-                base64_obj=image_base64, 
+                base64_str=image_base64, 
                 patient_id=patient_id
             )
             relative_path = request.system.generate_video(
