@@ -97,9 +97,18 @@ class ChatViewSet(viewsets.GenericViewSet):
         print(request.data)
         serializer = VideoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        image_base64 = serializer.validated_data.get("image_base64")
+        img_str = serializer.validated_data.get("image_base64")
         patient_id = serializer.validated_data.get("patient_id")
         duration = serializer.validated_data.get("duration")
+        # 在這裡才處理檔案轉換
+        image_content_file = None
+        if img_str:
+            try:
+                decoded_data = base64.b64decode(img_str)
+                image_base64 = ContentFile(decoded_data, name=f'{patient_id}_upload.jpg')
+            except Exception as e:
+                return Response({"error": f"Base64 轉碼失敗: {str(e)}"}, status=400)
+        
         relative_path=request.system.is_idle_video_exist(patient_id, duration)
         if not relative_path:
             image_path = request.system.save_base64_image(

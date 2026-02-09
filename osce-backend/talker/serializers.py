@@ -19,20 +19,10 @@ class VideoSerializer(serializers.Serializer):
     def validate_image_base64(self, value):
         if not value:
             return None
-        
+
         if ',' in value:
-            header, imgstr = value.split(',', 1)
-            ext = header.split('/')[-1].split(';')[0] if 'image/' in header else 'jpg'
-        else:
-            imgstr = value
-            ext = 'jpg'
-        
-        try:
-            data = base64.b64decode(imgstr)
-            return ContentFile(data, name=f'upload.{ext}')
-        except Exception as e:
-            raise serializers.ValidationError(f"Base64 decode error: {str(e)}")
-
-
+            _, imgstr = value.split(',', 1)
+            return imgstr
+        return value
    
     
