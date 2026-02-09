@@ -122,6 +122,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    container_name: osce-frontend-release
     volumes:
       - ./osce-frontend:/app/osce-frontend
       - /app/osce-frontend/node_modules
