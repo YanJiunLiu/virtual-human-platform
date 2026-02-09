@@ -18,7 +18,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: osce-backend-dev
+    container_name: osce-backend-only-mac-dev
     environment:
       - PYTHONPATH=/app/osce-backend
       - DJANGO_DEBUG=False
@@ -56,7 +56,7 @@ services:
 
   coturn:
     image: coturn/coturn:4.6.2
-    container_name: osce-coturn-dev
+    container_name: osce-coturn-only-mac-dev
     restart: unless-stopped
     ports:
       - "3478:3478"
@@ -86,7 +86,7 @@ services:
 
   ollama:
     image: ollama/ollama:0.15.5-rc3
-    container_name: osce-ollama-dev
+    container_name: osce-ollama-only-mac-dev
     environment:
       - OLLAMA_HOST=0.0.0.0
     ports:
