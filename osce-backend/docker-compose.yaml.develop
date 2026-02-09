@@ -11,7 +11,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.84.0/24
+        - subnet: 172.33.0.0/24
 
 services:
   backend:
@@ -49,7 +49,7 @@ services:
       - "8084:8084"
     networks:
       app-network-develop:
-        ipv4_address: 172.20.84.3 # 鎖定後端 IP
+        ipv4_address: 172.33.0.3 # 鎖定後端 IP
     deploy:
       resources:
         reservations:
@@ -71,7 +71,7 @@ services:
       - "10000-10050:10000-10050/udp"
     networks:
       app-network-develop:
-        ipv4_address: 172.20.84.2 # 鎖定 CoTURN IP
+        ipv4_address: 172.33.0.2 # 鎖定 CoTURN IP
     command:
       - turnserver
       - -n
@@ -84,8 +84,8 @@ services:
       - --min-port=10000
       - --max-port=10050
       - --verbose
-      - --external-ip=${HOST_IP}/172.20.84.2
-      - --relay-ip=172.20.84.2
+      - --external-ip=${HOST_IP}/172.33.0.2
+      - --relay-ip=172.33.0.2
       - --listening-ip=0.0.0.0
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
       - --allow-loopback-peers
@@ -103,5 +103,5 @@ services:
     restart: unless-stopped
     networks:
       app-network-develop:
-        ipv4_address: 172.20.84.5
+        ipv4_address: 172.33.0.5
     entrypoint: [ "/usr/bin/ollama", "serve" ]
