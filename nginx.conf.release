@@ -1,7 +1,7 @@
 server {
     listen 80;
     # 導向 HTTPS
-    return 301 https://$host:12001$request_uri;
+    return 301 https://$host:12000$request_uri;
 }
 
 server {
