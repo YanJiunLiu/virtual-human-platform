@@ -71,7 +71,7 @@ services:
     ports:
       - "3433:3433"
       - "3433:3433/udp"
-      - "10000-10050:10000-10050/udp"
+      - "10133-10183:10133-10183/udp"
     networks:
       app-network-develop:
         ipv4_address: 172.33.0.2 # 鎖定 CoTURN IP
