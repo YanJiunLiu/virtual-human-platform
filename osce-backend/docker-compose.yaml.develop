@@ -1,0 +1,107 @@
+version: "3.9"
+
+volumes:
+  ollama-data:
+  redis_data:
+
+
+networks:
+  # 鎖定網段，確保 IP 不會隨機變動
+  app-network-develop:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.84.0/24
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: osce-backend-dev
+    environment:
+      - PYTHONPATH=/app/osce-backend
+      - DJANGO_DEBUG=False
+      - BASE_DIR=/app/osce-backend
+      - MEDIA_DIR=/app/osce-backend/media
+      - EXTERNAL_IP=${HOST_IP}
+      - OLLAMA_BASE_URL=http://${HOST_IP}:11404/v1
+    volumes:
+      - ./backend_api:/app/osce-backend/backend_api
+      - ./mgmt:/app/osce-backend/mgmt
+      - ./middleware:/app/osce-backend/middleware
+      - ./osce:/app/osce-backend/osce
+      - ./talker:/app/osce-backend/talker
+      - ./exceptions.py:/app/osce-backend/exceptions.py
+      - ./manage.py:/app/osce-backend/manage.py
+      - ./db:/app/osce-backend/db
+      - ./log:/app/osce-backend/log
+      - ./media:/app/osce-backend/media
+      - ./models:/app/osce-backend/backend_api/models
+    working_dir: /app/osce-backend
+    command: >
+      bash -c "
+        python3.13 manage.py collectstatic --noinput --settings=backend_api.settings 
+        python3.13 manage.py makemigrations &&  python3.13 manage.py migrate --noinput
+        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8084 --workers 1 --timeout-keep-alive 300
+        "
+    ports:
+      - "8084:8084"
+    networks:
+      app-network-develop:
+        ipv4_address: 172.20.84.3 # 鎖定後端 IP
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    depends_on:
+      ollama:
+        condition: service_started
+
+  coturn:
+    image: coturn/coturn:4.6.2
+    container_name: osce-coturn-dev
+    restart: unless-stopped
+    ports:
+      - "3478:3478"
+      - "3478:3478/udp"
+      - "10000-10050:10000-10050/udp"
+    networks:
+      app-network-develop:
+        ipv4_address: 172.20.84.2 # 鎖定 CoTURN IP
+    command:
+      - turnserver
+      - -n
+      - --log-file=stdout
+      - --lt-cred-mech
+      - --fingerprint
+      - --realm=osce.local
+      - --user=osce:osce
+      - --listening-port=3478
+      - --min-port=10000
+      - --max-port=10050
+      - --verbose
+      - --external-ip=${HOST_IP}/172.20.84.2
+      - --relay-ip=172.20.84.2
+      - --listening-ip=0.0.0.0
+      - --allowed-peer-ip=0.0.0.0-255.255.255.255
+      - --allow-loopback-peers
+      - --no-cli
+
+  ollama:
+    image: ollama/ollama:0.15.5-rc3
+    container_name: osce-ollama-dev
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    ports:
+      - "11404:11434"
+    volumes:
+      - ./ollama:/root/.ollama
+    restart: unless-stopped
+    networks:
+      app-network-develop:
+        ipv4_address: 172.20.84.5
+    entrypoint: [ "/usr/bin/ollama", "serve" ]
