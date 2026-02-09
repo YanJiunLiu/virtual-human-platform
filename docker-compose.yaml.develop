@@ -23,8 +23,11 @@ services:
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
-      - EXTERNAL_IP=${HOST_IP}
       - OLLAMA_BASE_URL=http://${HOST_IP}:11404/v1
+      - EXTERNAL_IP=${HOST_IP}
+      - TURN_PORT=3477
+      - TURN_USERNAME=osce
+      - TURN_CREDENTIAL=osce
     volumes:
       - ./osce-backend:/app/osce-backend
       - ./mount_dev/db:/app/osce-backend/db
@@ -39,7 +42,7 @@ services:
         uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8004 --workers 1 --timeout-keep-alive 300
         "
     ports:
-      - "8004:8000"
+      - "8004:8004"
     networks:
       app-network-develop:
         ipv4_address: 172.20.0.3 # 鎖定後端 IP
@@ -59,8 +62,8 @@ services:
     container_name: osce-coturn-dev
     restart: unless-stopped
     ports:
-      - "3478:3478"
-      - "3478:3478/udp"
+      - "3477:3477"
+      - "3477:3477/udp"
       - "10000-10050:10000-10050/udp"
     networks:
       app-network-develop:
@@ -73,7 +76,7 @@ services:
       - --fingerprint
       - --realm=osce.local
       - --user=osce:osce
-      - --listening-port=3478
+      - --listening-port=3477
       - --min-port=10000
       - --max-port=10050
       - --verbose
@@ -122,6 +125,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    container_name: osce-frontend-dev
     volumes:
       - ./osce-frontend:/app/osce-frontend
       - /app/osce-frontend/node_modules

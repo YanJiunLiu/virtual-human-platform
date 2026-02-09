@@ -23,8 +23,11 @@ services:
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
-      - EXTERNAL_IP=${HOST_IP}
       - OLLAMA_BASE_URL=http://${HOST_IP}:11400/v1
+      - EXTERNAL_IP=${HOST_IP}
+      - TURN_PORT=3478
+      - TURN_USERNAME=osce
+      - TURN_CREDENTIAL=osce
     volumes:
       - ./osce-backend:/app/osce-backend
       - ./mount/db:/app/osce-backend/db
