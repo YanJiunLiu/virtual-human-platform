@@ -111,7 +111,6 @@ class AnimateFromCoeff():
                         device="cpu"):
         print("checkpoint_path", checkpoint_path)
         checkpoint = safetensors.torch.load_file(checkpoint_path)
-        print("checkpoint", checkpoint)
         if generator is not None:
             x_generator = {}
             for k,v in checkpoint.items():
