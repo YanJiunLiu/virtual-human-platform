@@ -59,13 +59,9 @@ class AnimateFromCoeff():
        
 
         generator.to(device)
-        print("generator.to(device)")
         kp_extractor.to(device)
-        print("kp_extractor.to(device)")
         he_estimator.to(device)
-        print("he_estimator.to(device)")
         mapping.to(device)
-        print("mapping.to(device)")
         for param in generator.parameters():
             param.requires_grad = False 
         for param in kp_extractor.parameters():
@@ -77,20 +73,14 @@ class AnimateFromCoeff():
 
         if sadtalker_path is not None:
             if 'checkpoint' in sadtalker_path: # use safe tensor
-                print("sadtalker_path['checkpoint']", sadtalker_path['checkpoint'])
                 self.load_cpk_facevid2vid_safetensor(sadtalker_path['checkpoint'], kp_detector=kp_extractor, generator=generator, he_estimator=None)
-                print("load_cpk_facevid2vid_safetensor")
             else:
-                print("sadtalker_path['free_view_checkpoint']", sadtalker_path['free_view_checkpoint'])
                 self.load_cpk_facevid2vid(sadtalker_path['free_view_checkpoint'], kp_detector=kp_extractor, generator=generator, he_estimator=he_estimator)
-                print("load_cpk_facevid2vid")
         else:
             raise AttributeError("Checkpoint should be specified for video head pose estimator.")
 
         if  sadtalker_path['mappingnet_checkpoint'] is not None:
-            print("sadtalker_path['mappingnet_checkpoint']", sadtalker_path['mappingnet_checkpoint'])
             self.load_cpk_mapping(sadtalker_path['mappingnet_checkpoint'], mapping=mapping)
-            print("load_cpk_mapping")
         else:
             raise AttributeError("Checkpoint should be specified for video head pose estimator.") 
 

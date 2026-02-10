@@ -32,15 +32,10 @@ class SadTalker():
         os.environ['TORCH_HOME']= checkpoint_path
 
         self.checkpoint_path = checkpoint_path
-        print("self.checkpoint_path", self.checkpoint_path)
         self.config_path = config_path
-        print("self.config_path", self.config_path)
         self.sadtalker_paths = init_path(checkpoint_path, self.config_path, 256, False, 'crop')
-        print("self.sadtalker_paths", self.sadtalker_paths)
         self.animate_from_coeff = AnimateFromCoeff(self.sadtalker_paths, self.device)
-        print("self.animate_from_coeff", self.animate_from_coeff)
         self.audio_to_coeff = Audio2Coeff(self.sadtalker_paths, self.device)
-        print("self.audio_to_coeff", self.audio_to_coeff)
 
     def execute(self, source_image, driven_audio, preprocess='crop', 
         still_mode=False,  use_enhancer=False, batch_size=1, size=256, 
@@ -57,13 +52,9 @@ class SadTalker():
 
         os.makedirs(result_dir, exist_ok=True)
         self.sadtalker_paths = init_path(self.checkpoint_path, self.config_path, size, False, preprocess)
-        print("self.sadtalker_paths", self.sadtalker_paths)
         self.animate_from_coeff = AnimateFromCoeff(self.sadtalker_paths, self.device)
-        print("self.animate_from_coeff", self.animate_from_coeff)
         self.audio_to_coeff = Audio2Coeff(self.sadtalker_paths, self.device)
-        print("self.audio_to_coeff", self.audio_to_coeff)
         self.preprocess_model = CropAndExtract(self.sadtalker_paths, self.device)
-        print("self.preprocess_model", self.preprocess_model)
 
         if result_dir_tag:
             time_tag = result_dir_tag
@@ -76,7 +67,6 @@ class SadTalker():
         input_dir = os.path.join(save_dir, 'input')
         os.makedirs(input_dir, exist_ok=True)
 
-        print(source_image)
         pic_path = os.path.join(input_dir, os.path.basename(source_image)) 
         shutil.copy(source_image, input_dir)
 
@@ -91,13 +81,11 @@ class SadTalker():
             one_sec_segment.export(audio_path, format="wav")
         else:
             assert driven_audio is not None, "No audio is given"
-            print(use_ref_video, ref_info)
             assert use_ref_video == True and ref_info == 'all'
 
         if use_ref_video and ref_info == 'all': # full ref mode
             ref_video_videoname = os.path.basename(ref_video)
             audio_path = os.path.join(save_dir, ref_video_videoname+'.wav')
-            print('new audiopath:',audio_path)
             # if ref_video contains audio, set the audio from ref_video.
             cmd = r"ffmpeg -y -hide_banner -loglevel error -i %s %s"%(ref_video, audio_path)
             os.system(cmd)        

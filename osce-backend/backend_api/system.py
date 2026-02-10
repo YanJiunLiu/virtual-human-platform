@@ -102,7 +102,6 @@ class WhisperSystem(BaseSystem):
         os.chdir(original_cwd)
         relative_path = os.path.relpath(output_audio_path, settings.MEDIA_DIR)
         audio_url = os.path.join(settings.MEDIA_URL, relative_path)
-        print(audio_url)
         return audio_url
     
     @staticmethod
@@ -113,7 +112,6 @@ class WhisperSystem(BaseSystem):
 
     def generate_video(self, image_path, duration=0, audio_path=None, use_idle_mode=False, patient_id=None):
         linly_path = os.path.join(settings.BASE_DIR, 'backend_api/linly_talker')
-        print("linly_path", linly_path)
         original_cwd = os.getcwd()
         os.chdir(linly_path)
         if linly_path not in sys.path:
@@ -124,14 +122,11 @@ class WhisperSystem(BaseSystem):
             config_path='src/config',
             lazy_load=True
         )
-        print("sad_talker", sad_talker)
         if use_idle_mode:
             audio_path = None
             result_dir = os.path.join(settings.MEDIA_DIR, 'idle_videos')
-            print("idle_result_dir", result_dir)
         else:
             result_dir = os.path.join(settings.MEDIA_DIR, 'videos')
-            print("video_result_dir", result_dir)
 
         video_path = sad_talker.execute(
             source_image=image_path,
@@ -163,9 +158,12 @@ class WhisperSystem(BaseSystem):
         return f"{patient_id}.jpg"
 
     def save_base64_image(self, contentFile, patient_id):
-        custom_storage = FileSystemStorage(location=settings.PICTURE_DIR)
-        file_name = custom_storage.save(contentFile.name.replace("image", patient_id), contentFile)
-        return os.path.join(settings.PICTURE_DIR, file_name)
+        file_name = contentFile.name.replace("image", patient_id)
+        file_path = os.path.join(settings.PICTURE_DIR, file_name)
+        if not os.path.exists(file_path):
+            custom_storage = FileSystemStorage(location=settings.PICTURE_DIR)
+            custom_storage.save(file_name, contentFile)
+        return file_path
 
     def get_image_path(self, patient_id):
         image_path = os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
