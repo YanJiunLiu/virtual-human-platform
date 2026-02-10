@@ -51,22 +51,23 @@ class AnimateFromCoeff():
 
         generator = OcclusionAwareSPADEGenerator(**config['model_params']['generator_params'],
                                                     **config['model_params']['common_params'])
-        print("generator", generator)
         kp_extractor = KPDetector(**config['model_params']['kp_detector_params'],
                                     **config['model_params']['common_params'])
-        print("kp_extractor", kp_extractor)
         he_estimator = HEEstimator(**config['model_params']['he_estimator_params'],
                                **config['model_params']['common_params'])
-        print("he_estimator", he_estimator)
         mapping = MappingNet(**config['model_params']['mapping_params'])
-        print("mapping", mapping)
+       
 
         generator.to(device)
+        print("generator.to(device)")
         kp_extractor.to(device)
+        print("kp_extractor.to(device)")
         he_estimator.to(device)
+        print("he_estimator.to(device)")
         mapping.to(device)
+        print("mapping.to(device)")
         for param in generator.parameters():
-            param.requires_grad = False
+            param.requires_grad = False 
         for param in kp_extractor.parameters():
             param.requires_grad = False 
         for param in he_estimator.parameters():

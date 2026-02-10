@@ -37,16 +37,10 @@ class SadTalker():
         print("self.config_path", self.config_path)
         self.sadtalker_paths = init_path(checkpoint_path, self.config_path, 256, False, 'crop')
         print("self.sadtalker_paths", self.sadtalker_paths)
-        try:
-            self.animate_from_coeff = AnimateFromCoeff(self.sadtalker_paths, self.device)
-            print("self.animate_from_coeff", self.animate_from_coeff)
-        except Exception as e:
-            print("self.animate_from_coeff", e)
-        try:
-            self.audio_to_coeff = Audio2Coeff(self.sadtalker_paths, self.device)
-            print("self.audio_to_coeff", self.audio_to_coeff)
-        except Exception as e:
-            print("self.audio_to_coeff", e)
+        self.animate_from_coeff = AnimateFromCoeff(self.sadtalker_paths, self.device)
+        print("self.animate_from_coeff", self.animate_from_coeff)
+        self.audio_to_coeff = Audio2Coeff(self.sadtalker_paths, self.device)
+        print("self.audio_to_coeff", self.audio_to_coeff)
 
     def execute(self, source_image, driven_audio, preprocess='crop', 
         still_mode=False,  use_enhancer=False, batch_size=1, size=256, 
