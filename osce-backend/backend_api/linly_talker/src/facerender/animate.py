@@ -99,7 +99,6 @@ class AnimateFromCoeff():
     def load_cpk_facevid2vid_safetensor(self, checkpoint_path, generator=None, 
                         kp_detector=None, he_estimator=None,  
                         device="cpu"):
-        print("checkpoint_path", checkpoint_path)
         checkpoint = safetensors.torch.load_file(checkpoint_path)
         if generator is not None:
             x_generator = {}
@@ -107,21 +106,18 @@ class AnimateFromCoeff():
                 if 'generator' in k:
                     x_generator[k.replace('generator.', '')] = v
             generator.load_state_dict(x_generator)
-        print("generator.load_state_dict")
         if kp_detector is not None:
             x_generator = {}
             for k,v in checkpoint.items():
                 if 'kp_extractor' in k:
                     x_generator[k.replace('kp_extractor.', '')] = v
             kp_detector.load_state_dict(x_generator)
-        print("kp_detector.load_state_dict")
         if he_estimator is not None:
             x_generator = {}
             for k,v in checkpoint.items():
                 if 'he_estimator' in k:
                     x_generator[k.replace('he_estimator.', '')] = v
             he_estimator.load_state_dict(x_generator)
-        print("he_estimator.load_state_dict")
         
         return None
 

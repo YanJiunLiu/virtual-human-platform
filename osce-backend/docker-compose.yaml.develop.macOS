@@ -11,21 +11,24 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.34.0.0/24
+        - subnet: 172.33.0.0/24
 
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: osce-backend-only-mac-dev
+    container_name: osce-backend-only-dev
     environment:
       - PYTHONPATH=/app/osce-backend
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
       - EXTERNAL_IP=${HOST_IP}
-      - OLLAMA_BASE_URL=http://${HOST_IP}:11404/v1
+      - TURN_PORT=3433
+      - TURN_USERNAME=osce
+      - TURN_CREDENTIAL=osce
+      - OLLAMA_BASE_URL=http://${HOST_IP}:11333/v1
     volumes:
       - ./backend_api:/app/osce-backend/backend_api
       - ./mgmt:/app/osce-backend/mgmt
@@ -37,34 +40,35 @@ services:
       - ./db:/app/osce-backend/db
       - ./log:/app/osce-backend/log
       - ./media:/app/osce-backend/media
-      - ./models:/app/osce-backend/backend_api/models
+      - ./backend_api/models:/app/osce-backend/backend_api/models
+      - ./backend_api/linly_talker/checkpoints:/app/osce-backend/backend_api/linly_talker/checkpoints
     working_dir: /app/osce-backend
     command: >
       bash -c "
         python3.13 manage.py collectstatic --noinput --settings=backend_api.settings 
         python3.13 manage.py makemigrations &&  python3.13 manage.py migrate --noinput
-        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8085 --workers 1 --timeout-keep-alive 300
+        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8084 --workers 1 --timeout-keep-alive 300
         "
     ports:
-      - "8085:8085"
+      - "8084:8084"
     networks:
       app-network-develop:
-        ipv4_address: 172.34.0.3 # 鎖定後端 IP
+        ipv4_address: 172.33.0.3 # 鎖定後端 IP
     depends_on:
       ollama:
         condition: service_started
 
   coturn:
     image: coturn/coturn:4.6.2
-    container_name: osce-coturn-only-mac-dev
+    container_name: osce-coturn-only-dev
     restart: unless-stopped
     ports:
-      - "3478:3478"
-      - "3478:3478/udp"
-      - "10000-10050:10000-10050/udp"
+      - "3433:3433"
+      - "3433:3433/udp"
+      - "10133-10183:10133-10183/udp"
     networks:
       app-network-develop:
-        ipv4_address: 172.34.0.2 # 鎖定 CoTURN IP
+        ipv4_address: 172.33.0.2 # 鎖定 CoTURN IP
     command:
       - turnserver
       - -n
@@ -73,12 +77,12 @@ services:
       - --fingerprint
       - --realm=osce.local
       - --user=osce:osce
-      - --listening-port=3478
+      - --listening-port=3433
       - --min-port=10000
       - --max-port=10050
       - --verbose
-      - --external-ip=${HOST_IP}/172.34.0.2
-      - --relay-ip=172.34.0.2
+      - --external-ip=${HOST_IP}/172.33.0.2
+      - --relay-ip=172.33.0.2
       - --listening-ip=0.0.0.0
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
       - --allow-loopback-peers
@@ -86,15 +90,15 @@ services:
 
   ollama:
     image: ollama/ollama:0.15.5-rc3
-    container_name: osce-ollama-only-mac-dev
+    container_name: osce-ollama-only-dev
     environment:
       - OLLAMA_HOST=0.0.0.0
     ports:
-      - "11404:11434"
+      - "11333:11434"
     volumes:
       - ./ollama:/root/.ollama
     restart: unless-stopped
     networks:
       app-network-develop:
-        ipv4_address: 172.34.0.5
+        ipv4_address: 172.33.0.5
     entrypoint: [ "/usr/bin/ollama", "serve" ]

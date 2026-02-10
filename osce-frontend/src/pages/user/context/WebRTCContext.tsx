@@ -43,6 +43,7 @@ export const WebRTCProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         const wsUrl = `${WS_BASE}/ws/webrtc/?patient_id=${patientId}&duration=${duration}`;
         const socket = new WebSocket(wsUrl);
+        console.log("wsUrl", wsUrl);
         socketRef.current = socket;
         console.log("turnServer", turnServer);
         console.log("turnUsername", turnUsername);
