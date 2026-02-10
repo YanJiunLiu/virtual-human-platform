@@ -82,7 +82,7 @@ services:
       - --log-file=stdout
       - --lt-cred-mech
       - --fingerprint
-      - --realm=osce.local
+      - --realm=${HOST_OUTER_IP}
       - --user=osce:osce
       - --listening-port=3478
       - --tls-listening-port=12004
