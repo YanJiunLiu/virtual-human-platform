@@ -113,6 +113,7 @@ class WhisperSystem(BaseSystem):
 
     def generate_video(self, image_path, duration=0, audio_path=None, use_idle_mode=False, patient_id=None):
         linly_path = os.path.join(settings.BASE_DIR, 'backend_api/linly_talker')
+        print("linly_path", linly_path)
         original_cwd = os.getcwd()
         os.chdir(linly_path)
         if linly_path not in sys.path:
