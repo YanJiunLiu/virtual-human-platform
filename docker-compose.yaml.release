@@ -78,7 +78,7 @@ services:
       - --log-file=stdout
       - --lt-cred-mech
       - --fingerprint
-      - --realm=${HOST_INNER_IP}
+      - --realm=osce.local
       - --user=osce:osce
       - --listening-port=3478
       - --tls-listening-port=12004
