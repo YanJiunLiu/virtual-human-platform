@@ -22,25 +22,35 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         self.patient_id = params.get('patient_id', [None])[0]
         self.duration = params.get('duration', [None])[0]
         
-        HOST_INNER_IP = getattr(settings, 'HOST_INNER_IP', '192.168.0.46')
-        HOST_OUTER_IP = getattr(settings, 'HOST_OUTER_IP', '192.168.0.46')
-        TURN_PORT = getattr(settings, 'TURN_PORT', '3478')
+        DOCKER_COTURN_IP = getattr(settings, 'DOCKER_COTURN_IP', '172.18.0.2')
+        HOST_OUTER_IP = getattr(settings, 'HOST_OUTER_IP', '118.163.52.147')
+        TURN_INNER_PORT = getattr(settings, 'TURN_INNER_PORT', '3478')
+        TURN_OUTER_PORT = getattr(settings, 'TURN_OUTER_PORT', '12004')
+        
         TURN_USERNAME = getattr(settings, 'TURN_USERNAME', 'osce')
         TURN_CREDENTIAL = getattr(settings, 'TURN_CREDENTIAL', 'osce')
         await self.accept()
         
         ice_servers = [
+            # 1. 容器內部直連 (解決後端在容器內連不到公網 IP 的問題)
             RTCIceServer(
-                urls=[f"turns:{HOST_OUTER_IP}:{TURN_PORT}"],
+                urls=[f"turn:{DOCKER_COTURN_IP}:{TURN_INNER_PORT}"], 
                 username=TURN_USERNAME,
                 credential=TURN_CREDENTIAL
             ),
+            # 2. 公網連線 (給前端外網使用的)
             RTCIceServer(
-                urls=[f"turns:{HOST_INNER_IP}:{TURN_PORT}"],
+                urls=[f"turn:{HOST_OUTER_IP}:{TURN_OUTER_PORT}"],
+                username=TURN_USERNAME,
+                credential=TURN_CREDENTIAL
+            ),
+            # 3. 加密公網連線
+            RTCIceServer(
+                urls=[f"turns:{HOST_OUTER_IP}:{TURN_OUTER_PORT}"],
                 username=TURN_USERNAME,
                 credential=TURN_CREDENTIAL
             )
-        ]
+        ]   
         config = RTCConfiguration(iceServers=ice_servers)
         self.pc = RTCPeerConnection(configuration=config)
         
