@@ -111,9 +111,17 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
                 answer = await self.pc.createAnswer()
                 await self.pc.setLocalDescription(answer)
                 
+                # 取得原始 SDP
+                original_sdp = self.pc.localDescription.sdp
+                print("original_sdp", original_sdp)
+                # 將容器內網 IP 強制替換成你的「公網 IP」
+                # 這樣前端瀏覽器才知道要透過公網去連線，進而觸發 TURN 中繼
+                modified_sdp = original_sdp.replace("172.18.0.3", "118.163.52.174")
+                print("modified_sdp", modified_sdp)
+
                 await self.send(text_data=json.dumps({
                     "type": "answer",
-                    "sdp": self.pc.localDescription.sdp
+                    "sdp": modified_sdp
                 }))
 
         except Exception as e:
