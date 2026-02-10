@@ -124,6 +124,7 @@ class WhisperSystem(BaseSystem):
             config_path='src/config',
             lazy_load=True
         )
+        print("sad_talker", sad_talker)
         if use_idle_mode:
             audio_path = None
             result_dir = os.path.join(settings.MEDIA_DIR, 'idle_videos')
