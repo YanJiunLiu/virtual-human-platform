@@ -288,12 +288,8 @@ OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://192.168.0.46:11404/v1")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "alibayram/medgemma")
 
 
-DOCKER_COTURN_IP = os.getenv("DOCKER_COTURN_IP", "172.18.0.2")
 HOST_INNER_IP = os.getenv("HOST_INNER_IP", "192.168.41.20")
-HOST_OUTER_IP = os.getenv("HOST_OUTER_IP", "118.163.52.147")
-
-TURN_OUTER_PORT = os.getenv("TURN_OUTER_PORT", "3478")
-TURN_INNER_PORT = os.getenv("TURN_INNER_PORT", "12004")
+TURN_INNER_PORT = os.getenv("TURN_INNER_PORT", "3478")
 
 TURN_USERNAME = os.getenv("TURN_USERNAME", "osce")
 TURN_CREDENTIAL = os.getenv("TURN_CREDENTIAL", "osce")
