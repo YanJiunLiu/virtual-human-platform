@@ -22,19 +22,13 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         self.patient_id = params.get('patient_id', [None])[0]
         self.duration = params.get('duration', [None])[0]
         
-        HOST_INNER_IP = getattr(settings, 'HOST_INNER_IP', '172.18.0.2')
-        TURN_INNER_PORT = getattr(settings, 'TURN_INNER_PORT', '3478')
-
-        TURN_USERNAME = getattr(settings, 'TURN_USERNAME', 'osce')
-        TURN_CREDENTIAL = getattr(settings, 'TURN_CREDENTIAL', 'osce')
-        await self.accept()
-        
+      await self.accept()
+        turn_stun_server = settings.TURN_STUN_SERVER
         ice_servers = [
-            RTCIceServer(urls=["stun:stun.l.google.com:19302"]),
             RTCIceServer(
-                urls=[f"turn:{HOST_INNER_IP}:{TURN_INNER_PORT}"], 
-                username=TURN_USERNAME,
-                credential=TURN_CREDENTIAL
+                urls=[turn_stun_server], 
+                username=settings.TURN_USERNAME,
+                credential=settings.TURN_CREDENTIAL
             )
         ]   
         config = RTCConfiguration(iceServers=ice_servers)
