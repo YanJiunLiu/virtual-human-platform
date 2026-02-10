@@ -62,7 +62,7 @@ export const WebRTCProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         const pc = new RTCPeerConnection(pcConfig);
         pcRef.current = pc;
-
+        console.log("pc", pc);
         // 1. 本地 Candidate 處理
         pc.onicecandidate = (event) => {
             if (event.candidate && socket.readyState === WebSocket.OPEN) {
