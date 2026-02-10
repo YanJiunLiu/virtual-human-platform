@@ -53,6 +53,8 @@ export const WebRTCProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 urls: turnServer,
                 username: turnUsername,
                 credential: turnCredential
+            }, {
+                urls: "stun:stun.l.google.com:19302"
             }],
             iceTransportPolicy: 'relay',
             bundlePolicy: 'max-bundle',
