@@ -71,8 +71,8 @@ services:
       app-network-release:
         ipv4_address: 172.18.0.2 # 鎖定 CoTURN IP
     volumes:
-      - ./fullchain.pem:/etc/ssl/certs/turn_server_cert.pem:ro
-      - ./privkey.pem:/etc/ssl/private/turn_server_pkey.pem:ro
+      - ./fullchain.pem:/etc/turn_server_cert.pem:ro
+      - ./privkey.pem:/etc/turn_server_pkey.pem:ro
     command:
       - turnserver
       - -n
@@ -85,8 +85,8 @@ services:
       - --min-port=10000
       - --max-port=10050
       - --verbose
-      - --cert=/etc/ssl/certs/turn_server_cert.pem
-      - --pkey=/etc/ssl/private/turn_server_pkey.pem
+      - --cert=/etc/turn_server_cert.pem
+      - --pkey=/etc/turn_server_pkey.pem
       - --external-ip=${HOST_OUTER_IP}/172.18.0.2
       - --relay-ip=172.18.0.2
       - --listening-ip=0.0.0.0
