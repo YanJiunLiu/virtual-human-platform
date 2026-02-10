@@ -83,7 +83,8 @@ services:
       - --verbose
       - --external-ip=${HOST_INNER_IP}/172.18.0.2
       - --relay-ip=172.18.0.2
-      - --listening-ip=0.0.0.0-255.255.255.255
+      - --listening-ip=0.0.0.0
+      - --allowed-peer-ip=0.0.0.0-255.255.255.255
       - --allow-loopback-peers
       - --no-cli
 
