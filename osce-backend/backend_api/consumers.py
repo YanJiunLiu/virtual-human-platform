@@ -22,7 +22,7 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         self.patient_id = params.get('patient_id', [None])[0]
         self.duration = params.get('duration', [None])[0]
         
-      await self.accept()
+        await self.accept()
         turn_stun_server = settings.TURN_STUN_SERVER
         ice_servers = [
             RTCIceServer(
