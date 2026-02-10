@@ -94,11 +94,11 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
                 audio_stream_manager.register_track(self.patient_id, audio_track)
                 
                 answer = await self.pc.createAnswer()
-                modified_sdp = await self.pc.setLocalDescription(answer)
+                await self.pc.setLocalDescription(answer)
 
                 await self.send(text_data=json.dumps({
                     "type": "answer",
-                    "sdp": modified_sdp
+                    "sdp": self.pc.localDescription.sdp
                 }))
 
         except Exception as e:
