@@ -26,24 +26,22 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         self.turn_port = getattr(settings, 'TURN_PORT', '3478')
         self.turn_username = getattr(settings, 'TURN_USERNAME', 'osce')
         self.turn_credential = getattr(settings, 'TURN_CREDENTIAL', 'osce')
-        print(f"External IP: {self.external_ip}")
-        print(f"TURN Port: {self.turn_port}")
-        print(f"TURN Username: {self.turn_username}")
-        print(f"TURN Credential: {self.turn_credential}")
         await self.accept()
-        print("WebSocket 已連線")
+        
         ice_servers = [
             RTCIceServer(
                 urls=[f"turn:{self.external_ip}:{self.turn_port}"],
                 username=self.turn_username,
                 credential=self.turn_credential
+            ),
+            RTCIceServer(
+                urls=[f"turns:{self.external_ip}:{self.turn_port}"],
+                username=self.turn_username,
+                credential=self.turn_credential
             )
         ]
-        print(f"ICE Servers: {ice_servers}")
         config = RTCConfiguration(iceServers=ice_servers)
-        print(f"RTC Configuration: {config}")
         self.pc = RTCPeerConnection(configuration=config)
-        print(f"RTCPeerConnection: {self.pc}")
         
         @self.pc.on("iceconnectionstatechange")
         async def on_iceconnectionstatechange():
