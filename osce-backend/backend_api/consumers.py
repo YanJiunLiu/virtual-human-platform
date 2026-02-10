@@ -94,7 +94,7 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
                 audio_stream_manager.register_track(self.patient_id, audio_track)
                 
                 answer = await self.pc.createAnswer()
-                await self.pc.setLocalDescription(answer)
+                modified_sdp = await self.pc.setLocalDescription(answer)
 
                 await self.send(text_data=json.dumps({
                     "type": "answer",
