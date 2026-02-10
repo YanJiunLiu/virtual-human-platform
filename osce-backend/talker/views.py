@@ -99,14 +99,11 @@ class ChatViewSet(viewsets.GenericViewSet):
         image_base64 = serializer.validated_data.get("image_base64")
         patient_id = serializer.validated_data.get("patient_id")
         duration = serializer.validated_data.get("duration")
-        
-        print("在這裡才處理檔案轉換")
     
         relative_path=request.system.is_idle_video_exist(patient_id, duration)
-        print("relative_path", relative_path)
         if not relative_path:
             image_path = request.system.save_base64_image(
-                base64_str=image_base64, 
+                contentFile=image_base64,
                 patient_id=patient_id
             )
             relative_path = request.system.generate_video(

@@ -6,6 +6,7 @@ import base64
 import re
 from yarl import URL
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.conf.urls.static import static
 from faster_whisper import WhisperModel
 from langchain_openai import ChatOpenAI
@@ -14,6 +15,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from backend_api.connection_manager import video_stream_manager, audio_stream_manager
 from asgiref.sync import async_to_sync
 from datetime import datetime
+
 
 class BaseSystem:
     def __init__(self,request):
@@ -156,30 +158,11 @@ class WhisperSystem(BaseSystem):
     def image_name(patient_id):
         return f"{patient_id}.jpg"
 
-    def save_base64_image(self, base64_str, patient_id):
-    try:
-        # 1. 處理 Data URI 格式 (data:image/jpeg;base64,...)
-        if "," in base64_str:
-            base64_str = base64_str.split(",")[1]
-        
-        # 2. 解碼
-        img_data = base64.b64decode(base64_str)
+    def save_base64_image(self, contentFile, patient_id):
+        custom_storage = FileSystemStorage(location=settings.PICTURE_DIR)
+        file_name = custom_storage.save(contentFile.name.replace("image", patient_id), contentFile)
+        return os.path.join(settings.PICTURE_DIR, file_name)
 
-        # 3. 確保目錄存在
-        if not os.path.exists(settings.PICTURE_DIR):
-            os.makedirs(settings.PICTURE_DIR, exist_ok=True)
-
-        # 4. 寫入檔案
-        file_path = os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
-        with open(file_path, "wb") as f:
-            f.write(img_data)
-    
-        return file_path
-
-    except Exception as e:
-        print(f"儲存圖片失敗: {str(e)}")
-        return None
-        
     def get_image_path(self, patient_id):
         image_path = os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
         if os.path.exists(image_path):
