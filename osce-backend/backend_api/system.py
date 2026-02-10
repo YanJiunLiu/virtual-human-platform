@@ -156,35 +156,30 @@ class WhisperSystem(BaseSystem):
     def image_name(patient_id):
         return f"{patient_id}.jpg"
 
-    def save_base64_image(self, base64_obj, patient_id):
-        try:
-            base64_obj.seek(0)
-            raw_content = base64_obj.read()
-
-            if raw_content.startswith(b'\x89PNG') or raw_content.startswith(b'\xff\xd8'):
-                img_data = raw_content
-            else:
-                try:
-                    base64_str = raw_content.decode('utf-8')
-                    if "," in base64_str:
-                        base64_str = base64_str.split(",")[1]
-                    img_data = base64.b64decode(base64_str)
-                except (UnicodeDecodeError, ValueError):
-                    img_data = raw_content
-
-            if not os.path.exists(settings.PICTURE_DIR):
-                os.makedirs(settings.PICTURE_DIR, exist_ok=True)
-
-            file_path = os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
-            with open(file_path, "wb") as f:
-                f.write(img_data)
+    def save_base64_image(self, base64_str, patient_id):
+    try:
+        # 1. 處理 Data URI 格式 (data:image/jpeg;base64,...)
+        if "," in base64_str:
+            base64_str = base64_str.split(",")[1]
         
-            return file_path
+        # 2. 解碼
+        img_data = base64.b64decode(base64_str)
 
-        except Exception as e:
-            print(f"儲存圖片失敗: {str(e)}")
-            return None
+        # 3. 確保目錄存在
+        if not os.path.exists(settings.PICTURE_DIR):
+            os.makedirs(settings.PICTURE_DIR, exist_ok=True)
 
+        # 4. 寫入檔案
+        file_path = os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
+        with open(file_path, "wb") as f:
+            f.write(img_data)
+    
+        return file_path
+
+    except Exception as e:
+        print(f"儲存圖片失敗: {str(e)}")
+        return None
+        
     def get_image_path(self, patient_id):
         image_path = os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
         if os.path.exists(image_path):
