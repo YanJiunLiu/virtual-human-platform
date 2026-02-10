@@ -30,6 +30,7 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         await self.accept()
         
         ice_servers = [
+            RTCIceServer(urls=["stun:stun.l.google.com:19302"]),
             RTCIceServer(
                 urls=[f"turn:{HOST_INNER_IP}:{TURN_INNER_PORT}"], 
                 username=TURN_USERNAME,
