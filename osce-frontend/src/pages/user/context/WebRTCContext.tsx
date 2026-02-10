@@ -54,7 +54,7 @@ export const WebRTCProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 username: turnUsername,
                 credential: turnCredential
             }],
-            iceTransportPolicy: 'relay',
+            iceTransportPolicy: 'all',
             bundlePolicy: 'max-bundle',
         };
 
