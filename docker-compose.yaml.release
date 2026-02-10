@@ -65,8 +65,6 @@ services:
     ports:
       - "3478:3478"
       - "3478:3478/udp"
-      - "12004:12004"
-      - "12004:12004/udp"
       - "10000-10050:10000-10050/udp"
     networks:
       app-network-release:
@@ -80,7 +78,7 @@ services:
       - --log-file=stdout
       - --lt-cred-mech
       - --fingerprint
-      - --realm=${HOST_OUTER_IP}
+      - --realm=${HOST_INNER_IP}
       - --user=osce:osce
       - --listening-port=3478
       - --tls-listening-port=12004
@@ -89,7 +87,7 @@ services:
       - --verbose
       - --cert=/etc/turn_server_cert.pem
       - --pkey=/etc/turn_server_pkey.pem
-      - --external-ip=${HOST_OUTER_IP}/172.18.0.2
+      - --external-ip=${HOST_INNER_IP}/172.18.0.2
       - --relay-ip=172.18.0.2
       - --listening-ip=0.0.0.0
       - --allow-loopback-peers
