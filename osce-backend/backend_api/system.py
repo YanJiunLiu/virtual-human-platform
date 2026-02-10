@@ -126,8 +126,10 @@ class WhisperSystem(BaseSystem):
         if use_idle_mode:
             audio_path = None
             result_dir = os.path.join(settings.MEDIA_DIR, 'idle_videos')
+            print("idle_result_dir", result_dir)
         else:
             result_dir = os.path.join(settings.MEDIA_DIR, 'videos')
+            print("video_result_dir", result_dir)
 
         video_path = sad_talker.execute(
             source_image=image_path,
