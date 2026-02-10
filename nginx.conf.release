@@ -71,7 +71,7 @@ server {
     }
 
     location /media/ {
-        alias /app/media/; 
+        alias /app/osce-backend/media/; 
         expires 7d;         
         add_header Access-Control-Allow-Origin *; 
     }
