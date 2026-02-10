@@ -30,11 +30,6 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         
         ice_servers = [
             RTCIceServer(
-                urls=[f"turn:{self.external_ip}:{self.turn_port}"],
-                username=self.turn_username,
-                credential=self.turn_credential
-            ),
-            RTCIceServer(
                 urls=[f"turns:{self.external_ip}:{self.turn_port}"],
                 username=self.turn_username,
                 credential=self.turn_credential
