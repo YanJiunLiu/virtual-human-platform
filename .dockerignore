@@ -1,0 +1,7 @@
+# 忽略所有 ssh 金鑰
+**/.ssh
+**/id_ed25519
+**/id_rsa
+
+# 也可以直接忽略整個 ollama 資料夾（如果 build backend 不需要它）
+ollama/
