@@ -77,13 +77,16 @@ class AnimateFromCoeff():
         if sadtalker_path is not None:
             if 'checkpoint' in sadtalker_path: # use safe tensor
                 self.load_cpk_facevid2vid_safetensor(sadtalker_path['checkpoint'], kp_detector=kp_extractor, generator=generator, he_estimator=None)
+                print("load_cpk_facevid2vid_safetensor")
             else:
                 self.load_cpk_facevid2vid(sadtalker_path['free_view_checkpoint'], kp_detector=kp_extractor, generator=generator, he_estimator=he_estimator)
+                print("load_cpk_facevid2vid")
         else:
             raise AttributeError("Checkpoint should be specified for video head pose estimator.")
 
         if  sadtalker_path['mappingnet_checkpoint'] is not None:
             self.load_cpk_mapping(sadtalker_path['mappingnet_checkpoint'], mapping=mapping)
+            print("load_cpk_mapping")
         else:
             raise AttributeError("Checkpoint should be specified for video head pose estimator.") 
 
