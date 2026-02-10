@@ -24,11 +24,11 @@ services:
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
-      - EXTERNAL_IP=${HOST_IP}
-      - TURN_PORT=3433
+      - OLLAMA_BASE_URL=http://${HOST_INNER_IP}:11333/v1
+      - TURN_STUN_SERVER=turn:192.168.41.20:3478
+      # - TURN_STUN_SERVER=stun:stun.l.google.com:19302
       - TURN_USERNAME=osce
       - TURN_CREDENTIAL=osce
-      - OLLAMA_BASE_URL=http://${HOST_IP}:11333/v1
     volumes:
       - ./backend_api:/app/osce-backend/backend_api
       - ./mgmt:/app/osce-backend/mgmt
@@ -88,7 +88,7 @@ services:
       - --min-port=10000
       - --max-port=10050
       - --verbose
-      - --external-ip=${HOST_IP}/172.33.0.2
+      - --external-ip=${HOST_INNER_IP}/172.33.0.2
       - --relay-ip=172.33.0.2
       - --listening-ip=0.0.0.0
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
