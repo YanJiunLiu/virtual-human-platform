@@ -106,13 +106,16 @@ class ChatViewSet(viewsets.GenericViewSet):
                 contentFile=image_base64,
                 patient_id=patient_id
             )
+            print("image_path", image_path)
             relative_path = request.system.generate_video(
                 image_path=image_path, 
                 duration=duration,
                 use_idle_mode=True,
                 patient_id=patient_id
             )
+            print("relative_path", relative_path)
         full_url = request.build_absolute_uri('/'+relative_path)
+        print("full_url", full_url)
         return Response({
             "success": True,    
             "data": {
