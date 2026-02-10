@@ -109,7 +109,7 @@ class AnimateFromCoeff():
     def load_cpk_facevid2vid_safetensor(self, checkpoint_path, generator=None, 
                         kp_detector=None, he_estimator=None,  
                         device="cpu"):
-
+        print("checkpoint_path", checkpoint_path)
         checkpoint = safetensors.torch.load_file(checkpoint_path)
         print("checkpoint", checkpoint)
         if generator is not None:
