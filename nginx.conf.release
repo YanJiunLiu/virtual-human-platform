@@ -1,7 +1,20 @@
 server {
     listen 80;
-    # 導向 HTTPS
-    return 301 https://$host:12000$request_uri;
+    server_name 192.168.41.20; # 增加你的區網 IP
+
+    # 關鍵：將 media 放在跳轉之前，這樣看影片就不會被強迫跳到 HTTPS
+    location /media/ {
+        alias /app/osce-backend/media/;
+        autoindex on;        # 暫時開啟，方便測試是否看得到檔案列表
+        expires 7d;
+        add_header Access-Control-Allow-Origin *;
+        add_header Accept-Ranges bytes; # 支援影片進度條拖動
+    }
+
+    # 其他請求才導向 HTTPS
+    location / {
+        return 301 https://$host:12000$request_uri;
+    }
 }
 
 server {
