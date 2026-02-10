@@ -45,33 +45,6 @@ STEP5. docker-compose -f docker-compose.yaml.develop down
 ### 單獨部署 osce-backend
 若只需執行後端相關服務 (包含 Backend API, Database, CoTURN, Ollama 與 Redis)，可使用以下指令：
 
-**Mac:**
-```bash
-
-STEP1. cd osce-backend
-STEP2. check osce-backend/models 是否有
-    1. whisper-v3-ct2/config.json
-    2. whisper-v3-ct2/model.bin
-    3. whisper-v3-ct2/vocabulary.json
-    4. whisper-v3-ct2/preprocessor_config.json
-    5. whisper-v3-ct2/tokenizer_config.json
-## https://huggingface.co/kidd1214/whisper-v3-ct2/whisper-v3-ct2
-STEP3. check osce-backend/backend_api/linly_talker/checkpoints 是否有
-    1. GFPGANv1.4.pth
-    2. mapping_00109-model.pth.tar
-    3. mapping_00229-model.pth.tar
-    4. SadTalker_V0.0.2_256.safetensors
-## https://huggingface.co/kidd1214/linly_talker_checkpoints/linly_talker_checkpoints
-STEP4. echo "HOST_INNER_IP=$(ipconfig getifaddr en0) HOST_OUTER_IP=$(curl -s ifconfig.me)" > .env
-STEP5. docker-compose -f docker-compose.yaml.develop.macOS build
-STEP6. docker-compose -f docker-compose.yaml.develop.macOS up -d
-STEP7. check ollama 是否有 model = alibayram/medgemma
-# curl http://localhost:11333/api/generate -d '{"model": "alibayram/medgemma", "prompt": "hi"}'
-# 若不存在 docker exec -it osce-ollama-only-dev ollama run alibayram/medgemma
-STEP8 (關閉使用). docker-compose -f docker-compose.yaml.develop.macOS down
-
-```
-
 #### 測試用網址：
 http://localhost:8084/talker/schema/swagger-ui/
 http://localhost:8084/osce/schema/swagger-ui/
@@ -94,13 +67,15 @@ STEP3. check osce-backend/backend_api/linly_talker/checkpoints 是否有
     3. mapping_00229-model.pth.tar
     4. SadTalker_V0.0.2_256.safetensors
 ## https://huggingface.co/kidd1214/linly_talker_checkpoints/linly_talker_checkpoints
-STEP4. echo "HOST_IP=$(ipconfig getifaddr en0)" > .env
-STEP5. docker-compose -f docker-compose.yaml.develop build
-STEP6. docker-compose -f docker-compose.yaml.develop up -d
+STEP4. echo "HOST_INNER_IP=$(hostname -I | awk '{print $1}')
+HOST_OUTER_IP=$(curl -s ifconfig.me)" > .env
+
+STEP5. docker-compose -f docker-compose.yaml.release build
+STEP6. docker-compose -f docker-compose.yaml.release up -d
 STEP7. check ollama 是否有 model = alibayram/medgemma
 # curl http://localhost:11333/api/generate -d '{"model": "alibayram/medgemma", "prompt": "hi"}'
 # 若不存在 docker exec -it osce-ollama-only-dev ollama run alibayram/medgemma
-STEP8 (關閉使用). docker-compose -f docker-compose.yaml.develop.macOS down
+STEP8 (關閉使用). docker-compose -f docker-compose.yaml.release down
 
 ```
 

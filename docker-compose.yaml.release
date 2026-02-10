@@ -24,7 +24,8 @@ services:
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
       - OLLAMA_BASE_URL=http://${HOST_INNER_IP}:11400/v1
-      - EXTERNAL_IP=${HOST_INNER_IP}
+      - HOST_INNER_IP=${HOST_INNER_IP}
+      - HOST_OUTER_IP=${HOST_OUTER_IP}
       - TURN_PORT=3478
       - TURN_USERNAME=osce
       - TURN_CREDENTIAL=osce

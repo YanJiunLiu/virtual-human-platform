@@ -22,17 +22,23 @@ class WebRTCConsumer(AsyncWebsocketConsumer):
         self.patient_id = params.get('patient_id', [None])[0]
         self.duration = params.get('duration', [None])[0]
         
-        self.external_ip = getattr(settings, 'EXTERNAL_IP', '192.168.0.46')
-        self.turn_port = getattr(settings, 'TURN_PORT', '3478')
-        self.turn_username = getattr(settings, 'TURN_USERNAME', 'osce')
-        self.turn_credential = getattr(settings, 'TURN_CREDENTIAL', 'osce')
+        HOST_INNER_IP = getattr(settings, 'HOST_INNER_IP', '192.168.0.46')
+        HOST_OUTER_IP = getattr(settings, 'HOST_OUTER_IP', '192.168.0.46')
+        TURN_PORT = getattr(settings, 'TURN_PORT', '3478')
+        TURN_USERNAME = getattr(settings, 'TURN_USERNAME', 'osce')
+        TURN_CREDENTIAL = getattr(settings, 'TURN_CREDENTIAL', 'osce')
         await self.accept()
         
         ice_servers = [
             RTCIceServer(
-                urls=[f"turn:{self.external_ip}:{self.turn_port}"],
-                username=self.turn_username,
-                credential=self.turn_credential
+                urls=[f"turns:{HOST_OUTER_IP}:{TURN_PORT}"],
+                username=TURN_USERNAME,
+                credential=TURN_CREDENTIAL
+            ),
+            RTCIceServer(
+                urls=[f"turns:{HOST_INNER_IP}:{TURN_PORT}"],
+                username=TURN_USERNAME,
+                credential=TURN_CREDENTIAL
             )
         ]
         config = RTCConfiguration(iceServers=ice_servers)
