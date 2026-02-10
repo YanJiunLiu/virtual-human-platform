@@ -62,7 +62,7 @@ STEP3. check osce-backend/backend_api/linly_talker/checkpoints 是否有
     3. mapping_00229-model.pth.tar
     4. SadTalker_V0.0.2_256.safetensors
 ## https://huggingface.co/kidd1214/linly_talker_checkpoints/linly_talker_checkpoints
-STEP4. echo "HOST_IP=$(ipconfig getifaddr en0)" > .env
+STEP4. echo "HOST_INNER_IP=$(ipconfig getifaddr en0) HOST_OUTER_IP=$(curl -s ifconfig.me)" > .env
 STEP5. docker-compose -f docker-compose.yaml.develop.macOS build
 STEP6. docker-compose -f docker-compose.yaml.develop.macOS up -d
 STEP7. check ollama 是否有 model = alibayram/medgemma

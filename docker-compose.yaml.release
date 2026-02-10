@@ -23,8 +23,8 @@ services:
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
-      - OLLAMA_BASE_URL=http://${HOST_IP}:11400/v1
-      - EXTERNAL_IP=${HOST_IP}
+      - OLLAMA_BASE_URL=http://${HOST_INNER_IP}:11400/v1
+      - EXTERNAL_IP=${HOST_INNER_IP}
       - TURN_PORT=3478
       - TURN_USERNAME=osce
       - TURN_CREDENTIAL=osce
@@ -81,7 +81,7 @@ services:
       - --min-port=10000
       - --max-port=10050
       - --verbose
-      - --external-ip=${HOST_IP}/172.18.0.2
+      - --external-ip=${HOST_OUTER_IP}/172.18.0.2
       - --relay-ip=172.18.0.2
       - --listening-ip=0.0.0.0
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
