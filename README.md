@@ -12,7 +12,7 @@ STEP1. check models and checkpoints
 ## https://huggingface.co/kidd1214/whisper-v3-ct2
 ## https://huggingface.co/kidd1214/linly_talker_checkpoints
 
-STEP2. echo "HOST_IP=$(ipconfig getifaddr en0)" > .env
+STEP2. echo "HOST_IP=$(curl -s ifconfig.me)" > .env
 
 STEP3. docker-compose -f docker-compose.yaml.develop.macOS build
 
