@@ -41,6 +41,7 @@ services:
       - ./log:/app/osce-backend/log
       - ./media:/app/osce-backend/media
       - ./models:/app/osce-backend/backend_api/models
+      - ./backend_api/linly_talker/checkpoints:/app/osce-backend/backend_api/linly_talker/checkpoints
     working_dir: /app/osce-backend
     command: >
       bash -c "
