@@ -92,7 +92,6 @@ services:
     image: coturn/coturn:4.6.2
     container_name: osce-coturn-12004-release
     restart: unless-stopped
-    # 這裡必須對外開放 12000 的 TCP 與 UDP (儘管你說只有 TCP 能通，但建議都開著)
     ports:
       - "12004:12004"
       - "12004:12004/udp"
@@ -100,48 +99,36 @@ services:
       app-network-release:
         ipv4_address: 172.18.0.7
     volumes:
-      # 掛載 SSL 憑證 (必須與 Nginx 使用的一致)
       - ./fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
       - ./privkey.pem:/etc/ssl/private/privkey.pem:ro
     command:
       - turnserver
-      - --n
       - --log-file=stdout
       - --verbose
-      # --- 基礎安全與領域設定 ---
       - --realm=osce.local
       - --user=osce:osce
       - --lt-cred-mech
       - --fingerprint
       - --no-cli
       
-      # --- 埠位與協議設定 (極端限制的核心) ---
       - --listening-port=12004
       - --tls-listening-port=12004
       - --listening-ip=0.0.0.0
       
-      # --- 憑證設定 (TURNS 模式必備) ---
       - --cert=/etc/ssl/certs/fullchain.pem
       - --pkey=/etc/ssl/private/privkey.pem
       
-      # --- HTTPS 轉發 (A 方案關鍵) ---
-      # 當 Coturn 收到 12004 但發現不是 TURN 協議時，轉發給 Nginx
       - --https-relaying-address=172.18.0.4
       - --https-relaying-port=443
       
-      # --- IP 與中繼設定 ---
-      # external-ip 必須填入你的公網 IP / 容器內網 IP
       - --external-ip=118.163.52.174/172.18.0.7
       - --relay-ip=172.18.0.7
       
-      # --- 傳輸限制設定 ---
-      # 因為你只有 12000 通，所以我們強制開啟 TCP 中繼
       - --no-udp-relay=false
       - --no-tcp-relay=false
       - --min-port=10000
       - --max-port=10050
       
-      # --- 權限與連線安全 ---
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
       - --allow-loopback-peers
 
