@@ -111,6 +111,7 @@ services:
       - --listening-ip=0.0.0.0
       - --no-udp-relay=true     
       - --no-tcp-relay=false
+      - --no-tcp=false
       
       - --external-ip=118.163.52.174/172.18.0.7
       - --relay-ip=172.18.0.7
