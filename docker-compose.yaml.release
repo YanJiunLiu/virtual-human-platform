@@ -98,13 +98,9 @@ services:
     networks:
       app-network-release:
         ipv4_address: 172.18.0.7
-    volumes:
-      - ./fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
-      - ./privkey.pem:/etc/ssl/private/privkey.pem:ro
     command:
       - turnserver
       - --log-file=stdout
-      - --verbose
       - --realm=osce.local
       - --user=osce:osce
       - --lt-cred-mech
@@ -112,26 +108,16 @@ services:
       - --no-cli
       
       - --listening-port=12004
-      - --tls-listening-port=12004
       - --listening-ip=0.0.0.0
-      
-      - --cert=/etc/ssl/certs/fullchain.pem
-      - --pkey=/etc/ssl/private/privkey.pem
-      
-      - --https-relaying-address=172.18.0.4
-      - --https-relaying-port=443
+      - --no-udp-relay=true     
+      - --no-tcp-relay=false
       
       - --external-ip=118.163.52.174/172.18.0.7
       - --relay-ip=172.18.0.7
       
-      - --no-udp-relay=false
-      - --no-tcp-relay=false
-      - --min-port=10000
-      - --max-port=10050
-      
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
       - --allow-loopback-peers
-
+      
   nginx:
     image: nginx:1.27.3-alpine
     container_name: osce-nginx-release
