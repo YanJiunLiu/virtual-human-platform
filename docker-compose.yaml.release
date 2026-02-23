@@ -109,7 +109,10 @@ services:
       
       - --listening-port=12004
       - --listening-ip=0.0.0.0
-      - --no-udp-relay=true     
+      - --no-udp-relay=false 
+      - --min-port=10000
+      - --max-port=10050
+
       - --no-tcp-relay=false
       - --no-tcp=false
       
