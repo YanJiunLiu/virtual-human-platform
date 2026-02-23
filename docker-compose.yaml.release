@@ -98,31 +98,26 @@ services:
     networks:
       app-network-release:
         ipv4_address: 172.18.0.7
-    command:
-      - turnserver
-      - --log-file=stdout
-      - --realm=osce.local
-      - --user=osce:osce
-      - --lt-cred-mech
-      - --fingerprint
-      - --no-cli
-      
-      - --listening-port=12004
-      - --tls-listening-port=12004
-      - --listening-ip=0.0.0.0
-      
-      - --no-udp-relay=false 
-      - --min-port=10000
-      - --max-port=10050
-
-      - --no-tcp-relay=false
-      - --no-tcp=false
-      
-      - --external-ip=118.163.52.174
-      - --relay-ip=172.18.0.7
-      
-      - --allowed-peer-ip=0.0.0.0-255.255.255.255
-      - --allow-loopback-peers
+    command: >
+      turnserver
+      --log-file=stdout
+      --realm=osce.local
+      --user=osce:osce
+      --lt-cred-mech
+      --fingerprint
+      --no-cli
+      --listening-port=12004
+      --tls-listening-port=12004
+      --listening-ip=0.0.0.0
+      --no-udp-relay=false 
+      --min-port=10000
+      --max-port=10050
+      --no-tcp-relay=false
+      --no-tcp=false
+      --external-ip=118.163.52.174
+      --relay-ip=172.18.0.7
+      --allowed-peer-ip=0.0.0.0-255.255.255.255
+      --allow-loopback-peers
       
   nginx:
     image: nginx:1.27.3-alpine
