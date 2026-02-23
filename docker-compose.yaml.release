@@ -108,7 +108,9 @@ services:
       - --no-cli
       
       - --listening-port=12004
+      - --tls-listening-port=12004
       - --listening-ip=0.0.0.0
+      
       - --no-udp-relay=false 
       - --min-port=10000
       - --max-port=10050
