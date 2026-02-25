@@ -20,6 +20,8 @@ STEP4. docker-compose -f docker-compose.yaml.develop.macOS up  -d
 
 STEP5. docker-compose -f docker-compose.yaml.develop.macOS down
 
+需確認：.env中的HOST_IP是否與前端.env.user中的VITE_TURN_SERVER_DEV一致(port一律為3433)
+
 ### 2-2. 非 Mac 版本
 適用於 Linux 使用者。
 
@@ -34,6 +36,8 @@ STEP3. docker-compose -f docker-compose.yaml.develop build
 STEP4. docker-compose -f docker-compose.yaml.develop up  -d 
 
 STEP5. docker-compose -f docker-compose.yaml.develop down
+
+需確認：.env中的HOST_IP是否與前端.env.user中的VITE_TURN_SERVER_DEV一致(port一律為3433)
 ```
 
 ---

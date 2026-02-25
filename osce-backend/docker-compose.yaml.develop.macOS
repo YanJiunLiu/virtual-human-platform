@@ -6,7 +6,6 @@ volumes:
 
 
 networks:
-  # 鎖定網段，確保 IP 不會隨機變動
   app-network-develop:
     driver: bridge
     ipam:
@@ -47,10 +46,10 @@ services:
       bash -c "
         python3.13 manage.py collectstatic --noinput --settings=backend_api.settings 
         python3.13 manage.py makemigrations &&  python3.13 manage.py migrate --noinput
-        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8084 --workers 1 --timeout-keep-alive 300
+        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8010 --workers 1 --timeout-keep-alive 300
         "
     ports:
-      - "8084:8084"
+      - "8010:8010"
     networks:
       app-network-develop:
         ipv4_address: 172.33.0.3 # 鎖定後端 IP
