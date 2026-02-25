@@ -24,7 +24,8 @@ services:
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
       - OLLAMA_BASE_URL=http://${HOST_INNER_IP}:11400/v1
-      - TURN_STUN_SERVER=turn:192.168.41.20:3478
+      - TURN_STUN_SERVER=turn:118.163.52.174:12004?transport=tcp
+      # - TURN_STUN_SERVER=turn:192.168.41.20:3478
       # - TURN_STUN_SERVER=stun:stun.l.google.com:19302
       - TURN_USERNAME=osce
       - TURN_CREDENTIAL=osce
@@ -88,6 +89,37 @@ services:
       - --allow-loopback-peers
       - --no-cli
 
+  coturn-12004:
+    image: coturn/coturn:4.6.2
+    container_name: osce-coturn-12004-release
+    restart: unless-stopped
+    ports:
+      - "12004:12004"
+      - "12004:12004/udp"
+    networks:
+      app-network-release:
+        ipv4_address: 172.18.0.7
+    command: >
+      turnserver
+      --log-file=stdout
+      --realm=osce.local
+      --user=osce:osce
+      --lt-cred-mech
+      --fingerprint
+      --no-cli
+      --listening-port=12004
+      --tls-listening-port=12004
+      --listening-ip=0.0.0.0
+      --no-udp-relay=false 
+      --min-port=10000
+      --max-port=10050
+      --no-tcp-relay=false
+      --no-tcp=false
+      --external-ip=118.163.52.174
+      --relay-ip=172.18.0.7
+      --allowed-peer-ip=0.0.0.0-255.255.255.255
+      --allow-loopback-peers
+      
   nginx:
     image: nginx:1.27.3-alpine
     container_name: osce-nginx-release

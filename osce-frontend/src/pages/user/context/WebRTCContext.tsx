@@ -54,7 +54,8 @@ export const WebRTCProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 username: turnUsername,
                 credential: turnCredential
             }],
-            iceTransportPolicy: 'all',
+            // iceTransportPolicy: 'all',
+            iceTransportPolicy: 'relay',
         };
 
         const pc = new RTCPeerConnection(pcConfig);
