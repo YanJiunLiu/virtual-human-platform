@@ -50,9 +50,9 @@ STEP5. docker-compose -f docker-compose.yaml.develop down
 若只需執行後端相關服務 (包含 Backend API, Database, CoTURN, Ollama 與 Redis)，可使用以下指令：
 
 #### 測試用網址：
-http://localhost:8084/talker/schema/swagger-ui/
-http://localhost:8084/osce/schema/swagger-ui/
-http://localhost:8084/mgmt/schema/swagger-ui/
+http://localhost:8010/talker/schema/swagger-ui/
+http://localhost:8010/osce/schema/swagger-ui/
+http://localhost:8010/mgmt/schema/swagger-ui/
 
 **Linux:**
 ```bash
@@ -84,9 +84,9 @@ STEP8 (關閉使用). docker-compose -f docker-compose.yaml.release down
 ```
 
 #### 測試用網址：
-http://localhost:8084/talker/schema/swagger-ui/
-http://localhost:8084/osce/schema/swagger-ui/
-http://localhost:8084/mgmt/schema/swagger-ui/
+http://localhost:8010/talker/schema/swagger-ui/
+http://localhost:8010/osce/schema/swagger-ui/
+http://localhost:8010/mgmt/schema/swagger-ui/
 
 
 ### 前端開發：
@@ -96,5 +96,5 @@ http://localhost:8084/mgmt/schema/swagger-ui/
     1-2. VITE_TURN_SERVER_DEV = turn:${HOST_IP}:3433
     1-3. VITE_TURN_USERNAME_DEV = osce
     1-4. VITE_TURN_CREDENTIAL_DEV = osce
-    1-5. VITE_API_BASE_DEV = http://localhost:8084
-    1-6. VITE_WS_BASE_DEV = ws://localhost:8084
+    1-5. VITE_API_BASE_DEV = http://localhost:8010
+    1-6. VITE_WS_BASE_DEV = ws://localhost:8010
