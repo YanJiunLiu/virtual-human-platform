@@ -105,5 +105,5 @@ http://localhost:8010/mgmt/schema/swagger-ui/
     STEP2. docker pull coturn/coturn:4.6.2 
     STEP3. docker pull kidd1214/osce-backend-backend:20260303
     STEP4. docker tag kidd1214/osce-backend-backend:20260303 osce-backend-backend:latest
-    STEP5. docker-compose up -d
+    STEP5. docker-compose -f docker-compose.yaml.develop.macOS up -d
 ```
