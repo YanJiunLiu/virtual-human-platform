@@ -98,3 +98,12 @@ http://localhost:8010/mgmt/schema/swagger-ui/
     1-4. VITE_TURN_CREDENTIAL_DEV = osce
     1-5. VITE_API_BASE_DEV = http://localhost:8010
     1-6. VITE_WS_BASE_DEV = ws://localhost:8010
+
+### 如果MacOS無法使用docker-compose build，請手動pull image
+```bash
+    STEP1. docker pull ollama/ollama:0.15.5-rc3
+    STEP2. docker pull coturn/coturn:4.6.2 
+    STEP3. docker pull kidd1214/osce-backend-backend:20260303
+    STEP4. docker tag kidd1214/osce-backend-backend:20260303 osce-backend-backend:latest
+    STEP5. docker-compose up -d
+```
