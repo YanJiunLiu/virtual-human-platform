@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import Navbar from "../navbar";
 import TitleBox from "../titleBox";
 import Report from "./report";
+
 // import Info from './info';
 import Complete from './complete';
 import Chat from './chat';
@@ -15,11 +16,20 @@ import CountdownTimer from '../../../components/countdownTimer';
 import { Btn } from '../../../components/OSCE-unit';
 import { useAuth } from "../../../context/AuthContext";
 import { useWebRTC } from "../context/WebRTCContext";
+import TableRenderer from './score/tableRenderer';
+import Status from './status';
 
 let isUploading = false;
 
+
+const PagerBtn = (props: { text: string, active: boolean, onClick: () => void }) =>
+    <button className={`min-w-32 font-medium rounded-2xl mr-1 text-osce-blue-5 border border-osce-blue-5  ${props.active ? "text-white bg-osce-blue-5 " : ""} `} onClick={props.onClick}>{props.text}</button>
+
+
 export default () => {
-    const [stater, setStater] = useState<"info" | "report" | "complete">("info");
+    const [stater, setStater] = useState<"testing" | "complete">("testing");//控制目前頁面是在測驗中還是完成後
+    const [pager, setPager] = useState<"info" | "report" | "history" | "score">("info");//控制測驗中頁面的分頁
+
     const { userData, setUserData } = useUserData();
     const [showModal, setShowModal] = useState(false);
     const [sounderState, setSounderState] = useState<string>("");
@@ -290,28 +300,27 @@ export default () => {
 
             <hr className="border-osce-gray-2 max-w-[1400px] mx-auto w-full" />
 
+
             {/* 控制區分頁按鈕 */}
             <div className="flex w-full max-w-[1400px] mx-auto h-[80px] py-[20px] justify-between items-center px-[20px]">
-                <div className="flex gap-2">
-                    <button
-                        className={`min-w-[130px] font-[500] rounded-2xl border border-osce-blue-5 py-1 transition-all ${stater === 'info' ? 'bg-osce-blue-5 text-white' : 'bg-transparent text-osce-blue-5'}`}
-                        onClick={() => setStater("info")}
-                    >
-                        病史資料
-                    </button>
-                    <button
-                        className={`min-w-[130px] font-[500] rounded-2xl border border-osce-blue-5 py-1 transition-all ${stater === 'report' ? 'bg-osce-blue-5 text-white' : 'bg-transparent text-osce-blue-5'}`}
-                        onClick={() => setStater("report")}
-                    >
-                        檢查資料
-                    </button>
+                <div>
+                    <PagerBtn text="病史資料" active={pager === "info"} onClick={() => { setPager("info") }} />
+                    <PagerBtn text="檢查資料" active={pager === "report"} onClick={() => { setPager("report") }} />
+                    {
+                        stater == "complete" &&
+                        <>
+                            <PagerBtn text="歷史紀錄" active={pager === "history"} onClick={() => { setPager("history") }} />
+                            <PagerBtn text="評分表" active={pager === "score"} onClick={() => { setPager("score") }} />
+                        </>
+                    }
                 </div>
+               
                 <div>
                     {stater === "complete" ? (
                         <button className="min-w-[130px] rounded-2xl bg-osce-blue-5 text-white py-1 shadow-md" onClick={() => setUserData({ ...userData, page: "menu" })}>離開測驗</button>
                     ) : (
                         <button className="min-w-[130px] rounded-2xl bg-osce-blue-5 text-white font-[500] py-1 shadow-md hover:bg-osce-blue-6" onClick={() => {
-                            setStater("complete");
+                            setStater("complete")
                             removeRecord();
                             saveTestResult(testResult);
                         }}>完成測驗</button>
@@ -320,76 +329,111 @@ export default () => {
             </div>
 
             <div className="flex w-full max-w-[1400px] mx-auto px-[20px] flex-grow gap-0 overflow-hidden" style={{ minHeight: '600px' }}>
+                {/* Avatar */}
                 <div className="relative rounded-tl-[20px] rounded-bl-[20px] overflow-hidden w-1/2 bg-black flex items-center justify-center border-r border-osce-gray-2">
-                    <video
-                        id="vhuman"
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full h-full object-cover"
-                        style={{ backgroundColor: 'black' }}
-                    />
-                    <audio ref={audioRef} autoPlay />
-                    <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[12px] z-10 flex items-center gap-2 ${webRTCStatus === 'connected' ? 'bg-green-500/80' : 'bg-yellow-500/80'} text-white`}>
-                        <div className={`w-2 h-2 rounded-full animate-pulse ${webRTCStatus === 'connected' ? 'bg-green-200' : 'bg-yellow-200'}`}></div>
-                        {webRTCStatus || "initializing..."}
-                    </div>
+                    {stater == "testing" ?
+                        <>
+                            <video
+                                id="vhuman"
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className="w-full h-full object-cover"
+                                style={{ backgroundColor: 'black' }}
+                            />
+                            <audio ref={audioRef} autoPlay />
+                            <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[12px] z-10 flex items-center gap-2 ${webRTCStatus === 'connected' ? 'bg-green-500/80' : 'bg-yellow-500/80'} text-white`}>
+                                <div className={`w-2 h-2 rounded-full animate-pulse ${webRTCStatus === 'connected' ? 'bg-green-200' : 'bg-yellow-200'}`}></div>
+                                {webRTCStatus || "initializing..."}
+                            </div>
 
-                    {message && (
-                        <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 bg-osce-blue-4/90 text-white p-5 rounded-[20px] max-w-[85%] z-10 text-center shadow-2xl border border-white/30 backdrop-blur-md">
-                            <p className="text-[18px] leading-relaxed">{message}</p>
-                        </div>
-                    )}
+                            {message && (
+                                <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 bg-osce-blue-4/90 text-white p-5 rounded-[20px] max-w-[85%] z-10 text-center shadow-2xl border border-white/30 backdrop-blur-md">
+                                    <p className="text-[18px] leading-relaxed">{message}</p>
+                                </div>
+                            )}
+                        </>
+                        :
+                        <Status/>
+                    }
                 </div>
 
                 <div className="bg-white rounded-tr-[20px] rounded-br-[20px] overflow-hidden flex flex-col w-1/2 shadow-2xl">
                     <div className="flex-1 overflow-y-auto">
-                        {stater === "info" && <div className="p-[40px]">
-                            <Chat
-                                messages={chatMessages}
-                                isRecording={isChatting}
-                            />
-                        </div>}
-                        {stater === "report" && (
+                        {
+                            pager === "info" &&
                             <div className="p-[40px]">
-                                <Report
-                                    check_data={userData?.tests?.check_data}
-                                    onChange={(newCheckData) => setTestResult({ check_data: newCheckData })}
+                                <Chat
+                                    messages={chatMessages}
+                                    isRecording={isChatting}
                                 />
                             </div>
-                        )}
-                        {stater === "complete" && <div className="p-[20px]"><Complete /></div>}
+                        }
+                        {
+                            pager === "report" && (
+                                <div className="p-[40px]">
+                                    <Report
+                                        check_data={userData?.tests?.check_data}
+                                        onChange={(newCheckData) => setTestResult({ check_data: newCheckData })}
+                                    />
+                                </div>
+                            )
+                        }
+                        {
+                            pager == "score" &&
+                            <div className="p-[20px] flex-1 overflow-y-auto max-h-[630px]">
+                                <div className='flex justify-between '>
+                                    <div className='text-center w-full p-[10px]'>
+                                        <span>評分項目：（12項）</span>
+                                    </div>
+                                    <div className='text-center w-full p-[10px]'>
+                                        <span>評量考生</span>
+                                    </div>
+                                </div>
+                                <div className='overflow-y-auto'>
+                                    <TableRenderer />
+                                </div>
+                            </div>
+                        }
+                        {
+                            pager === "history" &&
+                            <div className="p-[20px]">
+                                <Complete />
+                            </div>
+                        }
                     </div>
-
-                    <div className="bg-osce-blue-1 flex p-6 w-full items-center gap-4 border-t border-osce-gray-2">
-                        <div className="bg-white flex-1 h-[50px] rounded-[25px] flex items-center px-6 shadow-inner">
-                            <div className='w-[50px] font-mono text-osce-blue-5 text-lg font-bold'>
-                                {Math.floor(rms * 1000)}
+                    {//錄音
+                        stater === "testing" &&
+                        <div className="bg-osce-blue-1 flex p-6 w-full items-center gap-4 border-t border-osce-gray-2">
+                            <div className="bg-white flex-1 h-[50px] rounded-[25px] flex items-center px-6 shadow-inner">
+                                <div className='w-[50px] font-mono text-osce-blue-5 text-lg font-bold'>
+                                    {Math.floor(rms * 1000)}
+                                </div>
+                                <div className="flex-1 h-[10px] bg-gray-100 relative mx-4 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-osce-blue-5 transition-all duration-75"
+                                        style={{ width: `${Math.min(rms * 1000, 100)}%` }}
+                                    />
+                                </div>
+                                <span className='text-[12px] text-osce-blue-5 font-bold uppercase'>{sounderState || "IDLE"}</span>
                             </div>
-                            <div className="flex-1 h-[10px] bg-gray-100 relative mx-4 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-osce-blue-5 transition-all duration-75"
-                                    style={{ width: `${Math.min(rms * 1000, 100)}%` }}
-                                />
-                            </div>
-                            <span className='text-[12px] text-osce-blue-5 font-bold uppercase'>{sounderState || "IDLE"}</span>
+                            <button
+                                className={`px-8 py-3 rounded-2xl transition-all shadow-lg font-bold ${isRecordingActive ? 'bg-osce-red-5 hover:bg-osce-red-6' : 'bg-osce-blue-5 hover:bg-osce-blue-6'} text-white`}
+                                onClick={() => {
+                                    if (isRecordingActive) {
+                                        stopRecord();
+                                    } else {
+                                        setIsChatting(true);
+                                        startRecord();
+                                        handleUnlockAudio();
+                                    }
+                                }}
+                            >
+                                {isRecordingActive ? "結束錄音" : "開始錄音"}
+                            </button>
                         </div>
-                        <button
-                            className={`px-8 py-3 rounded-2xl transition-all shadow-lg font-bold ${isRecordingActive ? 'bg-osce-red-5 hover:bg-osce-red-6' : 'bg-osce-blue-5 hover:bg-osce-blue-6'} text-white`}
-                            onClick={() => {
-                                if (isRecordingActive) {
-                                    stopRecord();
-                                } else {
-                                    setIsChatting(true);
-                                    startRecord();
-                                    handleUnlockAudio();
-                                }
-                            }}
-                        >
-                            {isRecordingActive ? "結束錄音" : "開始錄音"}
-                        </button>
-                    </div>
+                    }
                 </div>
             </div>
 
