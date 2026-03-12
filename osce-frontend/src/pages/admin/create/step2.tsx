@@ -23,7 +23,7 @@ export default () => {
     const navigate = useNavigate();
     const [stdpt, setStdpt] = useState<standardizedpatientList>({counts:0,results:[]})
     const { token } = useAuth()
-    const { replacePayload, payload } = useCreateTest();
+    const { payload, replacePayload } = useCreateTest();
     const [subpayload, setSubpayload] = useState<createTest>(payload);
 
     useEffect(() => {
@@ -33,11 +33,11 @@ export default () => {
         }
         const fetchData = async () => {
             const res = await adminStandardpatients("list", { token: token }) as standardizedpatientList
-            console.log(res)
             setStdpt(res)
         }
         fetchData()
     }, [token])
+
     useEffect(() => {
         // 每次subpayload改變時更新全局payload
         replacePayload(subpayload);

@@ -1,31 +1,10 @@
 
 import { useEffect } from 'react'
-import config from '../../../config';
-import Navbar from "../navbar";
-import TitleBox from "../titleBox";
-//import Report from "../testing/report";
-//import Info from '../testing/info';
-//import Complete from '../testing/complete';
-//import { useNavigate } from 'react-router-dom';
+import config from '../../../../config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleExclamation, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
-//import Modal from '../../../components/Modal';
-import { useUserData } from '../context/DataContext';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+import { useUserData } from '../../context/DataContext';
 import TableRenderer from './tableRenderer';
-//import CountdownTimer from '../../../components/countdownTimer';
-
-
-//判斷使用者如果重新整理 將導回main頁面
-/*
-const navEntries = performance.getEntriesByType("navigation");
-if (
-    navEntries.length > 0 &&
-    (navEntries[0] as PerformanceNavigationTiming).type === "reload"
-) {
-    window.open("./main", "_self")
-}
-*/
-
 
 export default () => {
     const { userData } = useUserData();
@@ -38,48 +17,6 @@ export default () => {
 
     return (
         <>
-            <div className="bg-osce-gray-1 font-[700] pb-5 min-h-full">
-                <Navbar
-                    title="第01站-病史詢問與病情說明牙周病"
-                    rightContent={
-                        <button className="bg-white rounded-2xl text-osce-red-5 font-[500]" onClick={() => { }}>
-                            <FontAwesomeIcon icon={faCircleExclamation} className='px-1' />
-                            <span>放棄測試</span>
-                        </button>}
-                />
-                <TitleBox
-                    leftContent={
-                        <>
-                            <h6 className="text-osce-blue-4 mb-2">第01站</h6>
-                            <h2 className="text-[30px]">由上後牙</h2>
-                        </>
-                    }
-                    rightContent={
-                        <>
-                            <h6 className="text-osce-blue-4 mb-2">第01站</h6>
-                        </>
-                    }
-                />
-                <hr className="border-osce-gray-2 max-w-[1400px] mx-auto" />
-                <div className="flex w-full max-w-[1400px] mx-auto h-[80px] py-[20px] justify-between items-center px-[20px]">
-
-                    <div>
-                        <button
-                            className="min-w-[130px] font-[500] bg-osce-blue-5 rounded-2xl text-white border-1 border-osce-blue-5 mr-1"
-                            onClick={() => {
-                                // setStater("info") 
-                            }}>病史資料</button>
-                        <button
-                            className="min-w-[130px] font-[500] bg-osce-gray-1 rounded-2xl text-osce-blue-5 border-1 border-osce-blue-5 mr-1"
-                            onClick={() => {
-                                //setStater("report") 
-                            }}>檢查資料</button>
-                    </div>
-                    <div>
-                        <h6 className="text-osce-blue-4 mb-2">第01站</h6>
-                    </div>
-                </div>
-
                 <div className="flex w-full max-w-[1400px] mx-auto px-[20px] md:max-h-[640px] ">
                     <div className="relative rounded-tl-[20px] rounded-bl-[20px] overflow-hidden w-1/2 max-h-full">
                         <div className="bg-osce-gray-5 p-[20px]">
@@ -152,7 +89,6 @@ export default () => {
                         </div>
                     </div>
                 </div>
-            </div>
 
         </>
     )
