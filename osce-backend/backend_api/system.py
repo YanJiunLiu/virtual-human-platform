@@ -1,3 +1,5 @@
+from pooch import retrieve
+from torch import embedding
 import asyncio
 import os
 import sys
@@ -10,17 +12,25 @@ from django.core.files.storage import FileSystemStorage
 from django.conf.urls.static import static
 from faster_whisper import WhisperModel
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_chroma import Chroma
+from langchain_ollama import OllamaEmbeddings
+from langchain_core.documents import Document
+# from langchain.memory import ConversationBufferMemory
 from backend_api.connection_manager import video_stream_manager, audio_stream_manager
 from asgiref.sync import async_to_sync
 from datetime import datetime
-
 
 class BaseSystem:
     def __init__(self,request):
         self.request = request
         self.user = request.user
+
+    @staticmethod
+    def load_markdown(markdown_path):
+        print("markdown_path: ", markdown_path)
+        with open(markdown_path, 'r', encoding='utf-8') as f:
+            return f.read()
 
 class CSMUSystem(BaseSystem):
 
@@ -30,7 +40,6 @@ class CSMUSystem(BaseSystem):
             abs_url = URL(self.request.build_absolute_uri(image_obj))
             return str(URL(f"{abs_url.scheme}://{abs_url.host}:{abs_url.port}{settings.MEDIA_URL}{sub_dir}/{abs_url.name}"))
         return None
-
 
 class WhisperSystem(BaseSystem):
     model: WhisperModel | None = None
@@ -154,8 +163,15 @@ class WhisperSystem(BaseSystem):
         return relative_path
 
     @staticmethod
-    def image_name(patient_id):
-        return f"{patient_id}.jpg"
+    def get_image_path(patient_id):
+        extensions = [".jpg", ".jpeg", ".png", ".webp", ".bmp"]
+        for ext in extensions:
+            file_path = os.path.join(settings.PICTURE_DIR, f"{patient_id}{ext}")
+            if os.path.exists(file_path):
+                return file_path
+        
+        assert False, "Please run idle_video first"
+
 
     def save_base64_image(self, contentFile, patient_id):
         file_name = contentFile.name.replace("image", patient_id)
@@ -165,11 +181,8 @@ class WhisperSystem(BaseSystem):
             custom_storage.save(file_name, contentFile)
         return file_path
 
-    def get_image_path(self, patient_id):
-        image_path = os.path.join(settings.PICTURE_DIR, self.image_name(patient_id))
-        if os.path.exists(image_path):
-            return image_path
-        assert False, "Please run idle_video first"
+
+       
 
     def build_absolute_output_path(self, relative_output_path):
         clean_relative_path = relative_output_path.lstrip('/')
@@ -179,31 +192,36 @@ class WhisperSystem(BaseSystem):
     def is_punct_re(char):
         return bool(re.match(r'[^\w\s]', char)) 
 
-    def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
-        rules = """
-        規則：
-            1. 嚴禁提及你是 AI 或語言模型。
-            2. 只能回答體感、病徵。
-        """
+    def _chat_ollama(self, text, system_content:list):
+        rules = self.load_markdown(f"{settings.MARKDOWN_DIR}/Rule.md")
+
         llm = ChatOpenAI(
             api_key="ollama",
-            base_url=settings.OLLAMA_BASE_URL,
+            base_url=settings.OLLAMA_V1_URL,
             model=settings.OLLAMA_MODEL,
             temperature=0.9
         )
-        system_content+=rules
+
         prompt = ChatPromptTemplate.from_messages([
-            ("system", system_content),
+            ("system", "請嚴格遵守以下規範：\n{rules}"),
+            ("system", "以下是你當前檢索到的病歷資訊：\n{context}"),
             ("human", "{input}"),
         ])
-        absolute_image_path = self.get_image_path(
-            patient_id=patient_id
-        )
         chain = prompt | llm.bind(
             stop=["。", "\n", "！"], 
             max_tokens=20
         )
-        response = chain.invoke({"input": text})
+        response = chain.invoke({"input": text, "rules":rules, "context":system_content})
+        return response
+
+    def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
+        absolute_image_path = self.get_image_path(
+            patient_id=patient_id
+        )
+        response = self._chat_ollama( 
+            text=text, 
+            system_content=system_content,
+        )
         clean_response = self.clean_text_content(response.content)
         relative_audio_path = self.tts(
             text=clean_response, 

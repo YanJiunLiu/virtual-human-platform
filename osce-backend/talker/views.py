@@ -60,10 +60,11 @@ class ChatViewSet(viewsets.GenericViewSet):
         system_content = serializer.validated_data['system_content']
         clean_text = request.system.clean_text_content(message)
         response_text = request.system.chat_ollama(
+            patient_id=patient_id,
             text=clean_text, 
             system_content=system_content,
-            patient_id=patient_id
         ) 
+        print("response_text: ", response_text)
         return Response({
             "success": True,    
             "data": {

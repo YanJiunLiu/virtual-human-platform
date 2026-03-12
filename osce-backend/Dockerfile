@@ -31,4 +31,7 @@ RUN python3.13 -m pip install --no-cache-dir --break-system-packages --upgrade p
 RUN python3.13 -m pip install --no-cache-dir --break-system-packages --ignore-installed -r /app/requirement.txt
 
 
+COPY ./requirement_langchain.txt /app/requirement_langchain.txt
+RUN python3.13 -m pip install --no-cache-dir --break-system-packages --ignore-installed -r /app/requirement_langchain.txt
+
 WORKDIR /app/osce-backend

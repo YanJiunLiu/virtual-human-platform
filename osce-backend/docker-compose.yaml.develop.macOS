@@ -27,8 +27,9 @@ services:
       - TURN_PORT=3433
       - TURN_USERNAME=osce
       - TURN_CREDENTIAL=osce
-      - OLLAMA_BASE_URL=http://${HOST_IP}:11333/v1
+      - OLLAMA_BASE_URL=http://${HOST_IP}:11333
     volumes:
+      - ./.osce:/app/osce-backend/.osce 
       - ./backend_api:/app/osce-backend/backend_api
       - ./mgmt:/app/osce-backend/mgmt
       - ./middleware:/app/osce-backend/middleware

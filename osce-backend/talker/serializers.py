@@ -1,17 +1,24 @@
+from torch.optim.optimizer import required
+from django.template.defaultfilters import default
 import base64
 from rest_framework import serializers
 from django.core.files.base import ContentFile
 from talker.models import Conversation, ConversationDetail
 from drf_writable_nested.serializers import WritableNestedModelSerializer
-
+from osce.serializers import MedicalHistorySettingSerializer
 
 class STTSerializer(serializers.Serializer):
     audio_file = serializers.FileField(required=True)
 
+class SystemContextMedicalHistory(MedicalHistorySettingSerializer):
+    id = serializers.CharField(required=True)
+    category = serializers.CharField(required=True)
+    description = serializers.CharField(required=True)
+
 class ChatSerializer(serializers.Serializer):
     patient_id = serializers.CharField(required=True)
     message = serializers.CharField(required=False, default="你好,請闡述你的狀況")
-    system_content = serializers.CharField(required=False, default="你是一位生了重病的病患,請依照發燒的症狀闡述自己的狀況")
+    system_content = SystemContextMedicalHistory(many=True, required=False, default=[])
 
 
 class VideoSerializer(serializers.Serializer):

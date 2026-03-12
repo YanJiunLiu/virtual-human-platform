@@ -285,10 +285,18 @@ os.makedirs(LINLY_TALKER_CHECKPOINTS_DIR, exist_ok=True)
 LINLY_TALKER_CONFIG_DIR = os.getenv("LINLY_TALKER_CONFIG_DIR", os.path.join(BASE_DIR, 'backend_api/linly_talker/src/config'))
 os.makedirs(LINLY_TALKER_CONFIG_DIR, exist_ok=True)
 
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://192.168.0.46:11404/v1")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://192.168.0.46:11404")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "alibayram/medgemma")
+
+OLLAMA_V1_URL = f"{OLLAMA_BASE_URL}/v1"
 
 
 TURN_STUN_SERVER = os.getenv("TURN_STUN_SERVER", "stun:stun.l.google.com:19302")
 TURN_USERNAME = os.getenv("TURN_USERNAME", "osce")
 TURN_CREDENTIAL = os.getenv("TURN_CREDENTIAL", "osce")
+
+DOT_OSCE_DIR= os.path.join(BASE_DIR, '.osce')
+os.makedirs(DOT_OSCE_DIR, exist_ok=True)
+
+MARKDOWN_DIR = os.path.join(DOT_OSCE_DIR, 'md')
+os.makedirs(MARKDOWN_DIR, exist_ok=True)
