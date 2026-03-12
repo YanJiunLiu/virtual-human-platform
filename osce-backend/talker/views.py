@@ -19,7 +19,9 @@ from drf_spectacular.utils import (
 from talker.serializers import (
     ChatSerializer,
     STTSerializer,
-    VideoSerializer
+    VideoSerializer,
+    SaveConversationSerializer,
+    Conversation
 )
 from talker.decorators import talker
 
@@ -123,6 +125,48 @@ class ChatViewSet(viewsets.GenericViewSet):
             }
         }, status=status.HTTP_200_OK)
     
+    @talker()
+    @action(detail=False, methods=["post"], serializer_class=SaveConversationSerializer, parser_classes=[JSONParser])
+    def save_conversation(self, request, *args, **kwargs):
+        serializer = SaveConversationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "success": True,    
+            "data": {
+            "conversation": serializer.data
+        }
+        }, status=status.HTTP_200_OK)
+ 
+    
+    @action(detail=True, methods=["get"], serializer_class=SaveConversationSerializer)
+    def get_conversation(self, request, *args, **kwargs):
+        conversation = Conversation.objects.get(id=kwargs["pk"])
+        serializer = SaveConversationSerializer(conversation)
+        return Response({
+            "success": True,    
+            "data": {
+                "conversation": serializer.data
+            }
+        }, status=status.HTTP_200_OK)
+    
+
+    @talker()
+    @action(detail=False, methods=["post"], serializer_class=SaveConversationSerializer)
+    def scoring(self, request, *args, **kwargs):
+        conversation = Conversation.objects.get(id=kwargs["pk"])
+        serializer = SaveConversationSerializer(conversation)
+        return Response({
+            "success": True,    
+            "data": {
+                "conversation": serializer.data
+            }
+        }, status=status.HTTP_200_OK)
+        
+    
+
+
+
     
 @extend_schema(exclude=True)
 class  TalkerSpectacularAPIView(SpectacularAPIView):

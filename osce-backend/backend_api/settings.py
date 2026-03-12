@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'mgmt.apps.MgmtConfig',
     'osce.apps.OsceConfig',
+    'talker.apps.TalkerConfig',
     'rules.apps.AutodiscoverRulesConfig',
     'drf_spectacular',
     'corsheaders',

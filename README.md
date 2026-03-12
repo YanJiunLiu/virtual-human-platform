@@ -58,7 +58,7 @@ http://localhost:8010/mgmt/schema/swagger-ui/
 ```bash
 
 STEP1. cd osce-backend
-STEP2. check osce-backend/models 是否有
+STEP2. check osce-backend/backend_api/models 是否有
     1. whisper-v3-ct2/config.json
     2. whisper-v3-ct2/model.bin
     3. whisper-v3-ct2/vocabulary.json
