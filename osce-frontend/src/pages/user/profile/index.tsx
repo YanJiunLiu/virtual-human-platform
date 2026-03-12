@@ -21,16 +21,6 @@ export default () => {
     const { userData, setUserData } = useUserData();
 
 
-    /*
-    const infoRow = (title: string, description: React.ReactNode) =>
-        <div className="mb-[40px]">
-            <h6 className="text-osce-gray-3 mb-1">{title}</h6>
-            {description}
-        </div>
-    */
-
-
-
     useEffect(() => {
         if (token && pData.standardized_patient && pData.standardized_patient.id && pData.standardized_patient.head_shot) {
             connect({

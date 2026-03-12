@@ -49,6 +49,7 @@ export default () => {
             navigate('/login')
         }
         const fetchData = async() => {
+            console.log(subpayload)
             const res = await adminGetMedicalHistory({token:token, id:subpayload.department?.id}) as History[]
             setHistoryList(res)
         }
@@ -73,6 +74,7 @@ export default () => {
         // 每次subpayload改變時更新全局payload
         replacePayload(subpayload);
     }, [subpayload]);
+
     return (
         <>
             <div className="w-full">
@@ -101,7 +103,7 @@ export default () => {
                     ]}
                 />
 
-                <hr className="my-[20px] border-osce-gray-2" />
+                <hr className="my-5 border-osce-gray-2" />
                 <Row
                     items={[
                         "AI對答",
@@ -113,7 +115,7 @@ export default () => {
                             <span className="text-osce-lake-1 text-[13px]">列入評分</span>
                         </span>,
                         <textarea
-                            className="border w-full max-w-[600px] border-gray-400 ml-3 "
+                            className="border w-full max-w-150 border-gray-400 ml-3 "
                             placeholder="請輸入患者身分"
                             value={subpayload.main_description?.description}
                             onChange={(e) => { setSubpayload(prev => ({ ...prev, main_description:{...prev.main_description, description:e.target.value} }));}}
@@ -121,8 +123,7 @@ export default () => {
                         <Btn text="例句生成" className="bg-osce-blue-3" icon={faCommentDots} click={() => { /*setShowDelModal(true)*/ }} />
                     ]}
                 />
-
-                <hr className="my-[20px] border-osce-gray-2" />
+                <hr className="my-5 border-osce-gray-2" />
                 {
                     historyList?.map(
                         (history, index)=> 
@@ -146,7 +147,7 @@ export default () => {
                                     <span className="text-osce-lake-1 text-[13px]">列入評分</span>
                                 </span>,
                                 <textarea
-                                    className="border w-full max-w-[600px] border-gray-400 ml-3 "
+                                    className="border w-full max-w-150 border-gray-400 ml-3 "
                                     placeholder="請輸入患者身分"
                                     value={subpayload.medical_history_settings?.[index]?.description}
                                     onChange={(e) => { 
@@ -166,27 +167,6 @@ export default () => {
                     )
                 }
             </div>
-            {/*
-            <Modal isOpen={showModal} maxWidth={600} maxHeight={420} onClose={() => { }}>
-                <div className="p-2 w-full">
-                    <span>例句⽣成</span>
-                    <hr className="border-osce-gray-2 my-[10px]" />
-
-                    <span className="text-osce-gray-3">關鍵字</span>
-                    <textarea className="w-full border border-osce-gray-2 rounded-sm my-2" />
-                    <div className="flex justify-end">
-                        <Btn className="bg-osce-blue-3" icon={faCommentDots} click={() => { setShowDelModal(false) }} text="生成" />
-                    </div>
-                    <span className="text-osce-gray-3">關鍵字</span>
-                    <textarea className="w-full border border-osce-gray-2 rounded-sm my-2" />
-                    <div className="flex justify-end">
-                        <Btn className="bg-osce-blue-5" icon={faCheck} click={() => { setShowDelModal(false) }} text="完成" />
-                    </div>
-
-
-                </div>
-            </Modal>
-            */}
         </>
     )
 }

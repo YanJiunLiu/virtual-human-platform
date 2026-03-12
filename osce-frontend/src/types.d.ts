@@ -88,6 +88,7 @@ type Rect = {
     y: number;
     width: number;
     height: number;
+    text:string
 };
 
 type CheckData = {

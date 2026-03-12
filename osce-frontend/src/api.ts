@@ -359,7 +359,8 @@ export async function adminListDepartmentTests(requestData: requestData) {
         ...defaultOptions
     })
 }
-
+//教案相關
+/*
 export async function adminCreateTests(requestData: requestData) {
     defaultOptions.method = "POST"
     defaultOptions.headers = {
@@ -369,6 +370,31 @@ export async function adminCreateTests(requestData: requestData) {
     defaultOptions.body = JSON.stringify(requestData.data)
     return await fetchWithTimeout(`${API_BASE}/osce/case/`, {
         ...defaultOptions
+    })
+}*/
+
+export async function adminCreateTests(
+    act: "get" | "list" | "create" | "update" | "delete",
+    requestData: requestData
+) {
+
+    defaultOptions.method = (
+        act == "create" ? "POST" :
+            act == "update" ? "PATCH" :
+                act == "delete" ? "DELETE" :
+                    "GET"
+    )
+    defaultOptions.headers = {
+        ...defaultOptions.headers,
+        'Authorization': requestData.token
+    };
+
+    defaultOptions.body = JSON.stringify(requestData.data)
+    const url = `${API_BASE}/osce/case/${(act == "get" || act == "update" || act == "delete") ? (requestData.id + "/") : ""}`
+
+    return await fetchWithTimeout(url, {
+        ...defaultOptions,
+        mode: 'cors',
     })
 }
 

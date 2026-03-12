@@ -1,6 +1,5 @@
 import { useRef, type ChangeEvent } from "react";
-import { faCloudArrowUp, faMinusCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
-import { Btn } from "../../../components/OSCE-unit"
+import {  faMinusCircle, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 type uploadImgProps = {
@@ -99,14 +98,7 @@ export default ({setSubpayload, index, payload}:uploadImgProps) => {
             {/* 圖片預覽 */}
             {payload?.check_data?.[index]?.img && <img src={payload?.check_data?.[index]?.img} alt="預覽圖片" className="max-w-full h-auto my-2" />}
 
-            <div className="flex">
-                <Btn
-                    className="bg-osce-blue-3"
-                    icon={faCloudArrowUp}
-                    click={() => { }}
-                    text="上傳"
-                />
-            </div>
+            
         </div>
     );
 };
