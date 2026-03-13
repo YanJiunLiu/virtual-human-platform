@@ -47,10 +47,10 @@ services:
       bash -c "
         python3.13 manage.py collectstatic --noinput --settings=backend_api.settings 
         python3.13 manage.py makemigrations &&  python3.13 manage.py migrate --noinput
-        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8010 --workers 1 --timeout-keep-alive 300
+        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8088 --workers 1 --timeout-keep-alive 300
         "
     ports:
-      - "8010:8010"
+      - "8088:8088"
     networks:
       app-network-develop:
         ipv4_address: 172.33.0.3 # 鎖定後端 IP
