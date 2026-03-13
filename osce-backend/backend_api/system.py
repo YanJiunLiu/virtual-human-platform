@@ -13,10 +13,7 @@ from django.conf.urls.static import static
 from faster_whisper import WhisperModel
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings
-from langchain_core.documents import Document
-# from langchain.memory import ConversationBufferMemory
+from langchain_core.output_parsers import JsonOutputParser
 from backend_api.connection_manager import video_stream_manager, audio_stream_manager
 from asgiref.sync import async_to_sync
 from datetime import datetime
@@ -192,9 +189,35 @@ class WhisperSystem(BaseSystem):
     def is_punct_re(char):
         return bool(re.match(r'[^\w\s]', char)) 
 
-    def _chat_ollama(self, text, system_content:list):
-        rules = self.load_markdown(f"{settings.MARKDOWN_DIR}/Rule.md")
+    def _chat_ollama_2(self,data:dict, scoring:bool=False):
+        llm = ChatOpenAI(
+            api_key="ollama",
+            base_url=settings.OLLAMA_V1_URL,
+            model=settings.OLLAMA_MODEL,
+            temperature=0.9
+        )
+        system_content = settings.PATIENT_SYSTEM_PROMPT
+        user_content = settings.PATIENT_USER_PROMPT
+        if scoring:
+            system_content = settings.SCORING_SYSTEM_PROMPT
+            user_content = settings.SCORING_USER_PROMPT
 
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_content),
+            ("human", user_content),
+        ])
+
+        if scoring:
+            chain = prompt | llm | JsonOutputParser()
+        else:
+            chain = prompt | llm.bind(
+                stop=["。", "\n", "！"], 
+                max_tokens=20
+            ) | JsonOutputParser()
+        response = chain.invoke(data)
+        return response
+
+    def _chat_ollama(self, text, system_content:list):
         llm = ChatOpenAI(
             api_key="ollama",
             base_url=settings.OLLAMA_V1_URL,

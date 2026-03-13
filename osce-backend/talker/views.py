@@ -18,6 +18,7 @@ from drf_spectacular.utils import (
 
 from talker.serializers import (
     ChatSerializer,
+    ScoringSerializer,
     STTSerializer,
     VideoSerializer,
     SaveConversationSerializer,
@@ -63,8 +64,37 @@ class ChatViewSet(viewsets.GenericViewSet):
             patient_id=patient_id,
             text=clean_text, 
             system_content=system_content,
-        ) 
+        )
         print("response_text: ", response_text)
+        return Response({
+            "success": True,    
+            "data": {
+                "text": response_text
+            }
+        }, status=status.HTTP_200_OK)
+
+    @talker()
+    @action(detail=False, methods=["post"], serializer_class=ScoringSerializer)
+    def scoring(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        patient_id = serializer.validated_data['patient_id']
+        medical_history = serializer.validated_data.get('medical_history', [])
+        main_description = serializer.validated_data.get('main_description', [])
+        diagnosis = serializer.validated_data.get('diagnosis', [])
+        treatment = serializer.validated_data.get('treatment', [])
+        student_transcript = serializer.validated_data.get('student_transcript', [])
+        data = {
+                "medical_history": medical_history,
+                "main_description": main_description,
+                "diagnosis": diagnosis,
+                "treatment": treatment,
+                "student_transcript": student_transcript
+            }
+        response_text = request.system._chat_ollama_2(
+            data = data,
+            scoring = True
+        ) 
         return Response({
             "success": True,    
             "data": {
@@ -151,18 +181,6 @@ class ChatViewSet(viewsets.GenericViewSet):
             }
         }, status=status.HTTP_200_OK)
     
-
-    @talker()
-    @action(detail=False, methods=["post"], serializer_class=SaveConversationSerializer)
-    def scoring(self, request, *args, **kwargs):
-        conversation = Conversation.objects.get(id=kwargs["pk"])
-        serializer = SaveConversationSerializer(conversation)
-        return Response({
-            "success": True,    
-            "data": {
-                "conversation": serializer.data
-            }
-        }, status=status.HTTP_200_OK)
         
     
 

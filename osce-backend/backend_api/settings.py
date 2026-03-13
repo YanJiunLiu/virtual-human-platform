@@ -300,3 +300,20 @@ os.makedirs(DOT_OSCE_DIR, exist_ok=True)
 
 MARKDOWN_DIR = os.path.join(DOT_OSCE_DIR, 'md')
 os.makedirs(MARKDOWN_DIR, exist_ok=True)
+
+with open(f"{MARKDOWN_DIR}/Scoring_System_Prompt.md", 'r', encoding='utf-8') as f:
+    score_system_prompt = f.read()
+SCORING_SYSTEM_PROMPT = os.getenv("SCORING_SYSTEM_PROMPT", f"""{score_system_prompt}""")
+
+with open(f"{MARKDOWN_DIR}/Scoring_User_Prompt.md", 'r', encoding='utf-8') as f:
+    score_user_prompt = f.read()
+SCORING_USER_PROMPT = os.getenv("SCORING_USER_PROMPT", f"""{score_user_prompt}""")
+
+with open(f"{MARKDOWN_DIR}/Patient_System_Prompt.md", 'r', encoding='utf-8') as f:
+    system_prompt = f.read()
+PATIENT_SYSTEM_PROMPT = os.getenv("PATIENT_SYSTEM_PROMPT", f"""{system_prompt}""")
+
+with open(f"{MARKDOWN_DIR}/Patient_User_Prompt.md", 'r', encoding='utf-8') as f:
+    user_prompt = f.read()
+PATIENT_USER_PROMPT = os.getenv("PATIENT_USER_PROMPT", f"""{user_prompt}""")
+

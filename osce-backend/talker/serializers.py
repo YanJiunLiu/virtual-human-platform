@@ -10,15 +10,30 @@ from osce.serializers import MedicalHistorySettingSerializer
 class STTSerializer(serializers.Serializer):
     audio_file = serializers.FileField(required=True)
 
-class SystemContextMedicalHistory(MedicalHistorySettingSerializer):
-    id = serializers.CharField(required=True)
-    category = serializers.CharField(required=True)
-    description = serializers.CharField(required=True)
+class MedicalHistory(MedicalHistorySettingSerializer):
+    id = serializers.CharField(required=required)
+    category = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    ai_button = serializers.BooleanField(required=False, default=False)
+    sentence = serializers.CharField(required=False)
+
+    def to_internal_value(self, data):
+        if not data.get('category'):
+            del data['category']
+        if not data.get('description'):
+            del data['description']
+        if not data.get('sentence'):
+            del data['sentence']
+        data = super().to_internal_value(data)
+        return data
 
 class ChatSerializer(serializers.Serializer):
     patient_id = serializers.CharField(required=True)
-    message = serializers.CharField(required=False, default="你好,請闡述你的狀況")
-    system_content = SystemContextMedicalHistory(many=True, required=False, default=[])
+    message = serializers.CharField(required=False)
+    medical_history = MedicalHistory(many=True, required=False, default=[])
+    main_description = serializers.CharField(required=False)
+    diagnosis = serializers.CharField(required=False)
+    treatment = serializers.CharField(required=False)
 
 
 class VideoSerializer(serializers.Serializer):
@@ -53,6 +68,14 @@ class ConversationSerializer(WritableNestedModelSerializer):
         model = ConversationDetail
         fields = ['patient_message', 'user_message', 'timestamp']
         read_only_fields = ['id']
+
+    def to_internal_value(self, data):
+        if not data.get('user_message'):
+            del data['user_message']
+        if not data.get('patient_message'):
+            del data['patient_message']
+        data = super().to_internal_value(data)
+        return data
         
 class SaveConversationSerializer(WritableNestedModelSerializer):
     test_id = serializers.CharField(required=True)
@@ -63,3 +86,26 @@ class SaveConversationSerializer(WritableNestedModelSerializer):
         model = Conversation
         fields = ['test_id', 'patient_id', 'conversation']
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+class ScoringSerializer(serializers.Serializer):
+    patient_id = serializers.CharField(required=True)
+    medical_history = MedicalHistory(many=True, required=False, default=[])
+    main_description = serializers.CharField(required=False)
+    diagnosis = serializers.CharField(required=False)
+    treatment = serializers.CharField(required=False)
+    student_transcript = ConversationSerializer(many=True, required=False, default=[])
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        if data.get('medical_history'):
+            for medical_history in data['medical_history']:
+                if medical_history.get('id'):
+                    del medical_history['id']
+                if medical_history.get('ai_button'):
+                    del medical_history['ai_button']
+                if medical_history.get('sentence'):
+                    del medical_history['sentence']
+        data['medical_history']  = [obj for obj in data['medical_history'] if "description" in obj and obj["description"]]
+        if not data.get('medical_history'):
+            del data['medical_history']
+        return data
