@@ -58,6 +58,11 @@ class ChatViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         patient_id = serializer.validated_data['patient_id']
+        # 先取得病患圖片路徑
+        absolute_image_path = request.system.get_image_path(
+            patient_id=patient_id
+        )
+
         patient = StandardizedPatient.objects.get(id=patient_id)
         name = f"{patient.last_name}{patient.title}"
         age = patient.age
@@ -68,9 +73,9 @@ class ChatViewSet(viewsets.GenericViewSet):
         main_description = serializer.validated_data.get('main_description', [])
         diagnosis = serializer.validated_data.get('diagnosis', [])
         treatment = serializer.validated_data.get('treatment', [])
-        
         history = serializer.validated_data.get('history', [])
         message = serializer.validated_data['message']
+
         clean_text = request.system.clean_text_content(message)
         history.append(("human", clean_text))
          
@@ -84,11 +89,17 @@ class ChatViewSet(viewsets.GenericViewSet):
                 "diagnosis": diagnosis,
                 "treatment": treatment
             }
-        response_text = request.system._chat_ollama_2(
+        response = request.system.chat_ollama(
             data = data,
             history = history
         ) 
         print("response_text: ", response_text)
+        response_text =request.system.create_audio_and_video(
+            response=response,
+            absolute_image_path=absolute_image_path,
+            patient_id=patient_id
+        )
+        
         return Response({
             "success": True,    
             "data": {
@@ -101,7 +112,6 @@ class ChatViewSet(viewsets.GenericViewSet):
     def scoring(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        patient_id = serializer.validated_data['patient_id']
         medical_history = serializer.validated_data.get('medical_history', [])
         main_description = serializer.validated_data.get('main_description', [])
         diagnosis = serializer.validated_data.get('diagnosis', [])
@@ -114,7 +124,7 @@ class ChatViewSet(viewsets.GenericViewSet):
                 "treatment": treatment,
                 "student_transcript": student_transcript
             }
-        response_text = request.system._chat_ollama_2(
+        response_text = request.system.chat_ollama(
             data = data,
             scoring = True
         ) 

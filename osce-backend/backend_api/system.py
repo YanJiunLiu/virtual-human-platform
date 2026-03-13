@@ -189,7 +189,7 @@ class WhisperSystem(BaseSystem):
     def is_punct_re(char):
         return bool(re.match(r'[^\w\s]', char)) 
 
-    def _chat_ollama_2(self,data:dict, scoring:bool=False, history:list=[]):
+    def _chat_ollama(self, data:dict, scoring:bool=False, history:list=[]):
         llm = ChatOpenAI(
             api_key="ollama",
             base_url=settings.OLLAMA_V1_URL,
@@ -219,34 +219,8 @@ class WhisperSystem(BaseSystem):
         response = chain.invoke(data)
         return response
 
-    def _chat_ollama(self, text, system_content:list):
-        llm = ChatOpenAI(
-            api_key="ollama",
-            base_url=settings.OLLAMA_V1_URL,
-            model=settings.OLLAMA_MODEL,
-            temperature=0.9
-        )
 
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", "請嚴格遵守以下規範：\n{rules}"),
-            ("system", "以下是你當前檢索到的病歷資訊：\n{context}"),
-            ("human", "{input}"),
-        ])
-        chain = prompt | llm.bind(
-            stop=["。", "\n", "！"], 
-            max_tokens=20
-        )
-        response = chain.invoke({"input": text, "rules":rules, "context":system_content})
-        return response
-
-    def chat_ollama(self, text, patient_id='Unknown', system_content="你是一位病患"):
-        absolute_image_path = self.get_image_path(
-            patient_id=patient_id
-        )
-        response = self._chat_ollama( 
-            text=text, 
-            system_content=system_content,
-        )
+    def create_audio_and_video(self, response, absolute_image_path, patient_id):
         clean_response = self.clean_text_content(response.content)
         relative_audio_path = self.tts(
             text=clean_response, 
