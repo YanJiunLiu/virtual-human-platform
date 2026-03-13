@@ -6,7 +6,6 @@ volumes:
 
 
 networks:
-  # 鎖定網段，確保 IP 不會隨機變動
   app-network-develop:
     driver: bridge
     ipam:
@@ -24,12 +23,13 @@ services:
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
-      - OLLAMA_BASE_URL=http://${HOST_INNER_IP}:11333/v1
-      - TURN_STUN_SERVER=turn:192.168.41.20:3478
-      # - TURN_STUN_SERVER=stun:stun.l.google.com:19302
+      - EXTERNAL_IP=${HOST_IP}
+      - TURN_PORT=3433
       - TURN_USERNAME=osce
       - TURN_CREDENTIAL=osce
+      - OLLAMA_BASE_URL=http://${HOST_IP}:11333
     volumes:
+      - ./.osce:/app/osce-backend/.osce 
       - ./backend_api:/app/osce-backend/backend_api
       - ./mgmt:/app/osce-backend/mgmt
       - ./middleware:/app/osce-backend/middleware
@@ -47,10 +47,10 @@ services:
       bash -c "
         python3.13 manage.py collectstatic --noinput --settings=backend_api.settings 
         python3.13 manage.py makemigrations &&  python3.13 manage.py migrate --noinput
-        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8084 --workers 1 --timeout-keep-alive 300
+        uvicorn backend_api.asgi:application --host 0.0.0.0 --port 8010 --workers 1 --timeout-keep-alive 300
         "
     ports:
-      - "8084:8084"
+      - "8010:8010"
     networks:
       app-network-develop:
         ipv4_address: 172.33.0.3 # 鎖定後端 IP
@@ -88,7 +88,7 @@ services:
       - --min-port=10000
       - --max-port=10050
       - --verbose
-      - --external-ip=${HOST_INNER_IP}/172.33.0.2
+      - --external-ip=${HOST_IP}/172.33.0.2
       - --relay-ip=172.33.0.2
       - --listening-ip=0.0.0.0
       - --allowed-peer-ip=0.0.0.0-255.255.255.255
@@ -108,4 +108,11 @@ services:
     networks:
       app-network-develop:
         ipv4_address: 172.33.0.5
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
     entrypoint: [ "/usr/bin/ollama", "serve" ]
