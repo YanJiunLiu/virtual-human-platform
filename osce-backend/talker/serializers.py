@@ -34,7 +34,7 @@ class ChatSerializer(serializers.Serializer):
     main_description = serializers.CharField(required=False)
     diagnosis = serializers.CharField(required=False)
     treatment = serializers.CharField(required=False)
-
+    history = serializers.ListField(required=False, default=[])
 
 class VideoSerializer(serializers.Serializer):
     patient_id = serializers.CharField(required=True)
@@ -94,7 +94,7 @@ class ScoringSerializer(serializers.Serializer):
     diagnosis = serializers.CharField(required=False)
     treatment = serializers.CharField(required=False)
     student_transcript = ConversationSerializer(many=True, required=False, default=[])
-
+    
     def to_internal_value(self, data):
         data = super().to_internal_value(data)
         if data.get('medical_history'):

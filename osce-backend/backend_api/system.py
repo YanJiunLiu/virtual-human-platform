@@ -189,24 +189,25 @@ class WhisperSystem(BaseSystem):
     def is_punct_re(char):
         return bool(re.match(r'[^\w\s]', char)) 
 
-    def _chat_ollama_2(self,data:dict, scoring:bool=False):
+    def _chat_ollama_2(self,data:dict, scoring:bool=False, history:list=[]):
         llm = ChatOpenAI(
             api_key="ollama",
             base_url=settings.OLLAMA_V1_URL,
             model=settings.OLLAMA_MODEL,
             temperature=0.9
         )
-        print(settings.OLLAMA_V1_URL)
         system_content = settings.PATIENT_SYSTEM_PROMPT
         user_content = settings.PATIENT_USER_PROMPT
         if scoring:
             system_content = settings.SCORING_SYSTEM_PROMPT
             user_content = settings.SCORING_USER_PROMPT
-
-        prompt = ChatPromptTemplate.from_messages([
+        prompt = [
             ("system", system_content),
             ("human", user_content),
-        ])
+        ]
+        if history:
+            prompt.extend(history)
+        prompt = ChatPromptTemplate.from_messages(prompt)
 
         if scoring:
             chain = prompt | llm | JsonOutputParser()

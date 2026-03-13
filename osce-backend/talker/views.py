@@ -25,6 +25,7 @@ from talker.serializers import (
     Conversation
 )
 from talker.decorators import talker
+from osce.models import StandardizedPatient
 
 
 # Create your views here.
@@ -57,14 +58,36 @@ class ChatViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         patient_id = serializer.validated_data['patient_id']
+        patient = StandardizedPatient.objects.get(id=patient_id)
+        name = f"{patient.last_name}{patient.title}"
+        age = patient.age
+        gender = patient.gender
+        occupation = patient.job_title
+
+        medical_history = serializer.validated_data.get('medical_history', [])
+        main_description = serializer.validated_data.get('main_description', [])
+        diagnosis = serializer.validated_data.get('diagnosis', [])
+        treatment = serializer.validated_data.get('treatment', [])
+        
+        history = serializer.validated_data.get('history', [])
         message = serializer.validated_data['message']
-        system_content = serializer.validated_data['system_content']
         clean_text = request.system.clean_text_content(message)
-        response_text = request.system.chat_ollama(
-            patient_id=patient_id,
-            text=clean_text, 
-            system_content=system_content,
-        )
+        history.append(("human", clean_text))
+         
+        data = {
+                "name": name,
+                "age": age,
+                "gender": gender,
+                "occupation": occupation,
+                "medical_history": medical_history,
+                "main_description": main_description,
+                "diagnosis": diagnosis,
+                "treatment": treatment
+            }
+        response_text = request.system._chat_ollama_2(
+            data = data,
+            history = history
+        ) 
         print("response_text: ", response_text)
         return Response({
             "success": True,    
