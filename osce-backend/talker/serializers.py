@@ -131,14 +131,14 @@ class ScoringSerializer(serializers.Serializer):
 class GradeSerializer(WritableNestedModelSerializer):
     class Meta:
         model = Grade
-        fields = ['id', 'level', 'label']
+        fields = ['level', 'label']
         read_only_fields = ['id']
 
 class CategorySerializer(WritableNestedModelSerializer):
     grade = GradeSerializer(required=False)
     class Meta:
         model = Category
-        fields = ['id', 'category', 'feedback', 'grade']
+        fields = ['category', 'feedback', 'grade']
         read_only_fields = ['id']
 
 class SaveScoringSerializer(WritableNestedModelSerializer):
