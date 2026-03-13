@@ -3,7 +3,7 @@ from django.template.defaultfilters import default
 import base64
 from rest_framework import serializers
 from django.core.files.base import ContentFile
-from talker.models import Conversation, ConversationDetail
+from talker.models import Conversation, ConversationDetail, Scoring, Category, Grade
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from osce.serializers import MedicalHistorySettingSerializer
 
@@ -125,3 +125,31 @@ class ScoringSerializer(serializers.Serializer):
         if not data.get('medical_history'):
             del data['medical_history']
         return data
+
+
+
+class GradeSerializer(WritableNestedModelSerializer):
+    class Meta:
+        model = Grade
+        fields = ['id', 'level', 'label']
+        read_only_fields = ['id']
+
+class CategorySerializer(WritableNestedModelSerializer):
+    grade = GradeSerializer(required=False)
+    class Meta:
+        model = Category
+        fields = ['id', 'category', 'feedback', 'grade']
+        read_only_fields = ['id']
+
+class SaveScoringSerializer(WritableNestedModelSerializer):
+    score = CategorySerializer(many=True)
+
+    class Meta:
+        model = Scoring
+        fields = ['score']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+    
+
+

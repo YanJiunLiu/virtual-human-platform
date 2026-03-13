@@ -19,10 +19,11 @@ from drf_spectacular.utils import (
 from talker.serializers import (
     ChatSerializer,
     ScoringSerializer,
+    SaveScoringSerializer,
     STTSerializer,
     VideoSerializer,
     SaveConversationSerializer,
-    Conversation
+    Conversation,
 )
 from talker.decorators import talker
 from osce.models import StandardizedPatient
@@ -127,12 +128,14 @@ class ChatViewSet(viewsets.GenericViewSet):
         response_text = request.system.chat_ollama(
             data = data,
             scoring = True
-        ) 
+        )
+        rep = {"score": response_text}
+        serializer = SaveScoringSerializer(data=rep)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response({
             "success": True,    
-            "data": {
-                "text": response_text
-            }
+            "data": rep
         }, status=status.HTTP_200_OK)
 
     @talker()

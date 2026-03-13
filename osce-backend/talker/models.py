@@ -21,5 +21,16 @@ class Conversation(Model):
     created_at = DateTimeField(auto_now_add=True)
     created_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, null=True)
 
+class Grade(Model):
+    level = CharField(max_length=255, null=True, blank=True)
+    label = CharField(max_length=255, null=True, blank=True)
 
+class Category(Model):
+    category = CharField(max_length=255, null=True, blank=True)
+    feedback = CharField(max_length=255, null=True, blank=True)
+    grade = ForeignKey(Grade, on_delete=CASCADE, null=True)
     
+class Scoring(Model):
+    score = ManyToManyField(Category, related_name='scoring')
+    created_at = DateTimeField(auto_now_add=True)
+    created_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, null=True)
