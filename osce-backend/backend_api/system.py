@@ -189,7 +189,7 @@ class WhisperSystem(BaseSystem):
     def is_punct_re(char):
         return bool(re.match(r'[^\w\s]', char)) 
 
-    def _chat_ollama(self, data:dict, scoring:bool=False, history:list=[]):
+    def chat_ollama(self, data:dict, scoring:bool=False, history:list=[]):
         llm = ChatOpenAI(
             api_key="ollama",
             base_url=settings.OLLAMA_V1_URL,
