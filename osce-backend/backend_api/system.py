@@ -215,7 +215,7 @@ class WhisperSystem(BaseSystem):
             chain = prompt | llm.bind(
                 stop=["。", "\n", "！"], 
                 max_tokens=20
-            ) | JsonOutputParser()
+            )
         response = chain.invoke(data)
         return response
 

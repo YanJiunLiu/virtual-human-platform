@@ -27,6 +27,11 @@ class MedicalHistory(MedicalHistorySettingSerializer):
         data = super().to_internal_value(data)
         return data
 
+
+class Message(serializers.Serializer):
+    role = serializers.CharField(required=True)
+    content = serializers.CharField(required=True)
+
 class ChatSerializer(serializers.Serializer):
     patient_id = serializers.CharField(required=True)
     message = serializers.CharField(required=False)
@@ -34,7 +39,18 @@ class ChatSerializer(serializers.Serializer):
     main_description = serializers.CharField(required=False)
     diagnosis = serializers.CharField(required=False)
     treatment = serializers.CharField(required=False)
-    history = serializers.ListField(required=False, default=[])
+    history = Message(many=True, required=False, default=[])
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        if data.get('history'):
+            formatted_history = []
+            for msg in data['history']:
+                role = msg.get("role")
+                content = msg.get("content")
+                formatted_history.append((role, content))
+            data['history'] = formatted_history
+        return data
 
 class VideoSerializer(serializers.Serializer):
     patient_id = serializers.CharField(required=True)
