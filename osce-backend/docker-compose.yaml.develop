@@ -70,30 +70,31 @@ services:
     container_name: osce-coturn-only-dev
     restart: unless-stopped
     ports:
-      - "3433:3433"
-      - "3433:3433/udp"
-      - "10133-10183:10133-10183/udp"
+      - "12006:12006"
+      - "12006:12006/udp"
     networks:
       app-network-develop:
-        ipv4_address: 172.33.0.2 # 鎖定 CoTURN IP
-    command:
-      - turnserver
-      - -n
-      - --log-file=stdout
-      - --lt-cred-mech
-      - --fingerprint
-      - --realm=osce.local
-      - --user=osce:osce
-      - --listening-port=3433
-      - --min-port=10000
-      - --max-port=10050
-      - --verbose
-      - --external-ip=${HOST_IP}/172.33.0.2
-      - --relay-ip=172.33.0.2
-      - --listening-ip=0.0.0.0
-      - --allowed-peer-ip=0.0.0.0-255.255.255.255
-      - --allow-loopback-peers
-      - --no-cli
+        ipv4_address: 172.33.0.6 # 鎖定 CoTURN IP
+    command: >
+      turnserver
+      --log-file=stdout
+      --realm=osce.local
+      --user=osce:osce
+      --lt-cred-mech
+      --fingerprint
+      --no-cli
+      --listening-port=12006
+      --tls-listening-port=12006
+      --listening-ip=0.0.0.0
+      --no-udp-relay=false 
+      --min-port=10000
+      --max-port=10050
+      --no-tcp-relay=false
+      --no-tcp=false
+      --external-ip=118.163.52.174
+      --relay-ip=172.33.0.6
+      --allowed-peer-ip=0.0.0.0-255.255.255.255
+      --allow-loopback-peers
 
   ollama:
     image: ollama/ollama:0.15.5-rc3
@@ -122,7 +123,7 @@ services:
     container_name: osce-nginx-only-dev
     ports:
       - "12001:80"
-      - "12000:443"
+      - "12005:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./mount/dist:/usr/share/nginx/html
