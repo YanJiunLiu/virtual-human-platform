@@ -1,0 +1,40 @@
+{
+    "patient_id": "1",
+    "message": "你好",
+    "medical_history": [
+        {
+            "id": 4,
+            "ai_button": true,
+            "category": "家庭病史",
+            "description": "糖尿病",
+            "sentence": null
+        },
+        {
+            "id": 5,
+            "ai_button": true,
+            "category": "全身病史",
+            "description": "高血壓",
+            "sentence": null
+        },
+        {
+            "id": 6,
+            "ai_button": true,
+            "category": "本科病史",
+            "description": null,
+            "sentence": null
+        }
+    ],
+    "main_description": "口乾舌燥",
+    "diagnosis": "這是covid",
+    "treatment": "請使用抗病毒的藥",
+    "history": [
+        {
+            "role": "human",
+            "content": "你好"
+        },
+        {
+            "role": "ai",
+            "content": "唉...最近感覺很不舒服，口乾舌燥..."
+        }
+    ]
+}

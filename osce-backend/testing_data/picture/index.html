@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebRTC AI 數位人測試</title>
+    <style>
+        video {
+            width: 640px;
+            height: 360px;
+            background: #000;
+            border: 2px solid #333;
+        }
+
+        .controls {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>AI 數位人即時對話</h1>
+
+    <video id="remoteVideo" autoplay playsinline></video>
+
+    <div class="controls">
+        <button id="startButton">開始連線 (Start)</button>
+        <p id="status">狀態: 等待中...</p>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const statusText = document.getElementById('status');
+        const remoteVideo = document.getElementById('remoteVideo');
+
+        let pc = null;
+
+        async function startConnection() {
+            statusText.innerText = "狀態: 正在建立 PeerConnection...";
+
+            // 1. 建立 RTCPeerConnection 物件
+            pc = new RTCPeerConnection({
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] // 使用 Google 免費 STUN 伺服器
+            });
+
+            // 2. 監聽遠端傳回來的影片軌道 (AI 的臉)
+            pc.ontrack = (event) => {
+                console.log("收到遠端軌道:", event.streams);
+                if (remoteVideo.srcObject !== event.streams[0]) {
+                    remoteVideo.srcObject = event.streams[0];
+                }
+            };
+
+            // 3. 取得麥克風權限並加入軌道 (Audio Only)
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                stream.getTracks().forEach(track => pc.addTrack(track, stream));
+                statusText.innerText = "狀態: 已取得麥克風，正在交換信令...";
+            } catch (err) {
+                statusText.innerText = "錯誤: 無法開啟麥克風 " + err;
+                return;
+            }
+
+            // 4. 建立 Offer SDP
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            // 5. 傳送給你的 Django API (對應你之前的 rtc_offer action)
+            try {
+                const token = "Token 5cf2a001ac5669a39efa8e1e92d46f8eb0c7da4d";
+                const response = await fetch('http://localhost:8010/talker/chat/rtc_offer/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `${token}`
+                    },
+                    body: JSON.stringify({
+                        sdp: pc.localDescription.sdp,
+                        type: pc.localDescription.type,
+                    })
+                });
+
+                const answer = await response.json();
+
+                // 6. 設定後端傳回來的 Answer SDP
+                await pc.setRemoteDescription(new RTCSessionDescription(answer));
+                statusText.innerText = "狀態: 連線成功！可以開始說話了。";
+            } catch (err) {
+                statusText.innerText = "錯誤: API 連線失敗 " + err;
+            }
+        }
+
+        startButton.onclick = startConnection;
+    </script>
+</body>
+
+</html>

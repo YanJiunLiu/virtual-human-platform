@@ -32,9 +32,6 @@ public/~$sample.xlsx
 *.mp4
 
 
-# testing_data
-testing_data/
-
 # models
 osce-backend/backend_api/models/
 
