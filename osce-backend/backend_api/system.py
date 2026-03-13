@@ -196,6 +196,7 @@ class WhisperSystem(BaseSystem):
             model=settings.OLLAMA_MODEL,
             temperature=0.9
         )
+        print(settings.OLLAMA_V1_URL)
         system_content = settings.PATIENT_SYSTEM_PROMPT
         user_content = settings.PATIENT_USER_PROMPT
         if scoring:
