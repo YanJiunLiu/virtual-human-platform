@@ -33,9 +33,6 @@ services:
       - ./osce-backend:/app/osce-backend
       - ./mount/db:/app/osce-backend/db
       - ./mount/log:/app/osce-backend/log
-      - ./mount/media:/app/osce-backend/media
-      - ./mount/models:/app/osce-backend/backend_api/models
-      - ./mount/checkpoints:/app/osce-backend/backend_api/linly_talker/checkpoints
     working_dir: /app/osce-backend
     command: >
       bash -c "
