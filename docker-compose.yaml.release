@@ -124,7 +124,7 @@ services:
     image: nginx:1.27.3-alpine
     container_name: osce-nginx-release
     ports:
-      - "12001:80"
+      - "12345:80"
       - "12004:443"
     volumes:
       - ./nginx.conf.release:/etc/nginx/conf.d/default.conf:ro
