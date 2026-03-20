@@ -90,7 +90,7 @@ class ChatViewSet(viewsets.GenericViewSet):
                 "diagnosis": diagnosis,
                 "treatment": treatment
             }
-        response = request.system.chat_ollama(
+        response_text = request.system.chat_ollama(
             data = data,
             history = history
         ) 
