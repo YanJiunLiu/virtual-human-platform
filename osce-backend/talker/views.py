@@ -90,11 +90,10 @@ class ChatViewSet(viewsets.GenericViewSet):
                 "diagnosis": diagnosis,
                 "treatment": treatment
             }
-        response_text = request.system.chat_ollama(
+        response = request.system.chat_ollama(
             data = data,
             history = history
         ) 
-        print("response_text: ", response_text)
         response_text =request.system.create_audio_and_video(
             response=response,
             absolute_image_path=absolute_image_path,
