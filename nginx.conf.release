@@ -13,7 +13,7 @@ server {
 
     # 其他請求才導向 HTTPS
     location / {
-        return 301 https://$host:12004$request_uri;
+        return 301 https://$host:12007$request_uri;
     }
 }
 
