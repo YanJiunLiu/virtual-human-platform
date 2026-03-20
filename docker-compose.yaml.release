@@ -23,7 +23,7 @@ services:
       - DJANGO_DEBUG=False
       - BASE_DIR=/app/osce-backend
       - MEDIA_DIR=/app/osce-backend/media
-      - OLLAMA_BASE_URL=http://${HOST_INNER_IP}:11400/v1
+      - OLLAMA_BASE_URL=http://${HOST_INNER_IP}:11400
       - TURN_STUN_SERVER=turn:118.163.52.174:12004?transport=tcp
       # - TURN_STUN_SERVER=turn:192.168.41.20:3478
       # - TURN_STUN_SERVER=stun:stun.l.google.com:19302

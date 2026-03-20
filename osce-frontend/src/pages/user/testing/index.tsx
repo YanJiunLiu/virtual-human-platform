@@ -225,12 +225,13 @@ export default () => {
                     data: formData // Send the FormData object, not a plain { audio_file: ... } object
                 });
                 const parsedRes = typeof res === 'string' ? JSON.parse(res) : res;
+                console.log(parsedRes);
                 setChatMessages((prev) => [...prev, { sender: 'doctor', content: parsedRes.data.text }]);
                 const res2 = await userChatWithOllama({
                     token: token,
                     data: {
                         patient_id: userData?.tid,
-                        message: parsedRes.text
+                        message: parsedRes.data.text
                         // TO-DO-1: 加上 medical_history 病史
                         // TO-DO-2: 加上 main_description 主訴
                         // TO-DO-3: 加上 diagnosis 診斷
