@@ -125,7 +125,7 @@ services:
     container_name: osce-nginx-release
     ports:
       - "12001:80"
-      - "12000:443"
+      - "12004:443"
     volumes:
       - ./nginx.conf.release:/etc/nginx/conf.d/default.conf:ro
       - ./mount/dist:/usr/share/nginx/html
