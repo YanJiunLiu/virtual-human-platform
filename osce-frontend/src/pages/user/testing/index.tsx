@@ -230,8 +230,14 @@ export default () => {
                     token: token,
                     data: {
                         patient_id: userData?.tid,
-                        message: parsedRes.text,
-                        system_content: "你是一位生了重病的病患,請依照發燒的症狀闡述自己的狀況"
+                        message: parsedRes.text
+                        // TO-DO-1: 加上 medical_history 病史
+                        // TO-DO-2: 加上 main_description 主訴
+                        // TO-DO-3: 加上 diagnosis 診斷
+                        // TO-DO-4: 加上 symptoms 症狀
+                        // TO-DO-5: 加上 treatment 治療
+                        // TO-DO-6: 加上 history 過去對話紀錄
+
                     }
                 });
                 const parsedRes2 = typeof res2 === 'string' ? JSON.parse(res2) : res2;
@@ -314,7 +320,7 @@ export default () => {
                         </>
                     }
                 </div>
-               
+
                 <div>
                     {stater === "complete" ? (
                         <button className="min-w-[130px] rounded-2xl bg-osce-blue-5 text-white py-1 shadow-md" onClick={() => setUserData({ ...userData, page: "menu" })}>離開測驗</button>
@@ -355,7 +361,7 @@ export default () => {
                             )}
                         </>
                         :
-                        <Status/>
+                        <Status />
                     }
                 </div>
 
