@@ -5,3 +5,5 @@
 
 # 也可以直接忽略整個 ollama 資料夾（如果 build backend 不需要它）
 ollama/
+
+osce-backend/ollama
