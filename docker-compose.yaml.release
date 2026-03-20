@@ -149,6 +149,13 @@ services:
     networks:
       app-network-release:
         ipv4_address: 172.18.0.5
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     entrypoint: ["/usr/bin/ollama", "serve"]
 
   frontend:
